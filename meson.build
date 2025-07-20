@@ -10,7 +10,7 @@ subdir('external/imgui')
 fs = import('fs')
 
 #fs.copyfile('src/Conemap.vert', install : true, install_dir : '.')
-#fs.copyfile('src/Conemap.frag', install : true, install_dir : '.')
+fs.copyfile('src/ConeStepMapping.frag', install : true, install_dir : '.')
 
 executable('Conemap renderer',
            'src/main.cpp',

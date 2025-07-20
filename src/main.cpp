@@ -4,11 +4,54 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+// GLM
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
+
 // ImGui
-#include <cstdio>
-#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <imgui.h>
+
+// STD
+#include <cstdio>
+#include <iostream>
+
+// TODO delete start
+
+typedef struct Vertex {
+  glm::vec2 pos;
+  glm::vec3 col;
+} Vertex;
+
+static const Vertex vertices[3] = {{{-0.6f, -0.4f}, {1.f, 0.f, 0.f}},
+                                   {{0.6f, -0.4f}, {0.f, 1.f, 0.f}},
+                                   {{0.f, 0.6f}, {0.f, 0.f, 1.f}}};
+
+static const char *vertex_shader_text =
+    "#version 330\n"
+    "uniform mat4 MVP;\n"
+    "in vec3 vCol;\n"
+    "in vec2 vPos;\n"
+    "out vec3 color;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+    "    color = vCol;\n"
+    "}\n";
+
+static const char *fragment_shader_text = "#version 330\n"
+                                          "in vec3 color;\n"
+                                          "out vec4 fragment;\n"
+                                          "void main()\n"
+                                          "{\n"
+                                          "    fragment = vec4(color, 1.0);\n"
+                                          "}\n";
+// TODO delete end
 
 static void error_callback(int error, const char *description) {
   fprintf(stderr, "Error: %s\n", description);
@@ -18,7 +61,12 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action,
                          int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+  // TODO keybinds
 }
+
+// TODO mouse
+// check ImGui capture?
 
 int main(void) {
   /* Setup error callback */
@@ -53,36 +101,94 @@ int main(void) {
   /* Start ImGui*/
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
+
+  // /* Init shader programs */
+  // GLuint simple_program_id = glCreateProgram();
+
+  // TODO delete start
+  GLuint vertex_buffer;
+  glGenBuffers(1, &vertex_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+  glCompileShader(vertex_shader);
+
+  const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+  glCompileShader(fragment_shader);
+
+  const GLuint program = glCreateProgram();
+  glAttachShader(program, vertex_shader);
+  glAttachShader(program, fragment_shader);
+  glLinkProgram(program);
+
+  const GLint mvp_location = glGetUniformLocation(program, "MVP");
+  const GLint vpos_location = glGetAttribLocation(program, "vPos");
+  const GLint vcol_location = glGetAttribLocation(program, "vCol");
+
+  GLuint vertex_array;
+  glGenVertexArrays(1, &vertex_array);
+  glBindVertexArray(vertex_array);
+  glEnableVertexAttribArray(vpos_location);
+  glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (void *)offsetof(Vertex, pos));
+  glEnableVertexAttribArray(vcol_location);
+  glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (void *)offsetof(Vertex, col));
+  // TODO delete end
 
   /* Set vsync */
   glfwSwapInterval(1);
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
+    // TODO to window change callback
     /* Get window size and ratio */
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    // const float ratio = width / (float)height;
+    const float ratio = width / (float)height;
 
     glViewport(0, 0, width, height);
 
     /* Render frame */
+    glClearColor(0.1f, 0.3f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // TODO to render code
     // TODO render here
-	
-		/* Render ImGui */
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame(); // After this ImGui commands can be called until ImGui::Render()
 
-		ImGui::NewFrame();
-		/* Compose ImGui here */
-		ImGui::ShowDemoWindow(); // TODO delete
-		ImGui::Render();
+    // TODO delete srart
+    glm::mat4 world =
+        glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    // TODO to window change callback
+    glm::mat4 view_projection =
+        glm::perspective(glm::half_pi<float>(), ratio, 0.0f, 1000.0f) *
+        glm::lookAt(glm::vec3(0.0f, 1.0f, 1.0f),
+										glm::vec3(0.0f),
+                    glm::vec3(0.0f, 0.0f, 1.0f));
 
+    glm::mat4 mvp = view_projection * world;
+
+    glUseProgram(program);
+    glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *)&mvp);
+    glBindVertexArray(vertex_array);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // TODO delete end
+
+    /* Render ImGui */
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame(); // After this ImGui commands can be called until
+                               // ImGui::Render()
+
+    ImGui::NewFrame();
+    /* Compose ImGui here */
+    ImGui::ShowDemoWindow(); // TODO delete
+    ImGui::Render();
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -96,7 +202,7 @@ int main(void) {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-	/* Terminate GLFW */
+  /* Terminate GLFW */
   if (window != NULL)
     glfwDestroyWindow(window);
   glfwTerminate();
