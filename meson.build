@@ -1,5 +1,6 @@
 project('Conemap renderer', 'cpp')
 
+# deps
 gl_dep = dependency('GL')
 glew_dep = dependency('GLEW')
 glm_dep = dependency('glm')
@@ -9,12 +10,18 @@ subdir('external/imgui')
 
 fs = import('fs')
 
-#fs.copyfile('src/Conemap.vert', install : true, install_dir : '.')
+# shaders
+fs.copyfile('src/ConeStepMapping.vert', install : true, install_dir : '.')
 fs.copyfile('src/ConeStepMapping.frag', install : true, install_dir : '.')
-fs.copyfile('src/test.vert', install : true, install_dir : '.')
-fs.copyfile('src/test.frag', install : true, install_dir : '.')
+
+# assets
+fs.copyfile('assets/pyramids.png-step.png', install: true, install_dir: '.')
+fs.copyfile('assets/wood.png', install: true, install_dir: '.')
 
 executable('Conemap renderer',
            'src/main.cpp',
+           'src/scene.cpp',
+           'src/ConeSteppingObject.cpp',
+           'src/file_utils.cpp',
            dependencies : [gl_dep, glew_dep, glm_dep, glfw_dep, imgui_dep],
            install : true)
