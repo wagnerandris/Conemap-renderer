@@ -22,6 +22,7 @@ executable('Conemap renderer',
            'src/main.cpp',
            'src/scene.cpp',
            'src/ConeSteppingObject.cpp',
+           'src/Camera.cpp',
            'src/file_utils.cpp',
            dependencies : [gl_dep, glew_dep, glm_dep, glfw_dep, imgui_dep],
            install : true)

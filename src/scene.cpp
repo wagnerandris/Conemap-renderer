@@ -13,6 +13,7 @@
 
 #include "ConeSteppingObject.hpp"
 #include "file_utils.hpp"
+
 #include "scene.hpp"
 
 void Scene::create_shaders() {
@@ -74,7 +75,9 @@ void Scene::create_scene_objects() {
   quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
 }
 
-Scene::Scene() {
+// TODO camera init
+// TODO change ratio when window changes
+Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 16.0f/9.0f)) {
 	create_shaders();
 	load_textures();
 	create_scene_objects();
@@ -108,11 +111,12 @@ void Scene::render() {
   GLuint eyeSpaceLightLoc = glGetUniformLocation(program, "inEyeSpaceLight");
 
   glUniformMatrix4fv(worldViewMatrixLoc, 1, false,
-                     glm::value_ptr(viewMatrix * worldMatrix));
+                     glm::value_ptr(camera.get_view_matrix() * worldMatrix));
   glUniformMatrix4fv(projectionMatrixLoc, 1, false,
-                     glm::value_ptr(projectionMatrix));
+                     glm::value_ptr(camera.get_projection_matrix()));
+  // TODO right projection?
   glUniform3fv(eyeSpaceLightLoc, 1,
-               glm::value_ptr(viewMatrix * glm::vec4(light_pos, 1.0f)));
+               glm::value_ptr(camera.get_view_matrix() * glm::vec4(light_pos, 1.0f)));
 
   // fragment
   GLuint ambientLoc = glGetUniformLocation(program, "ambient");

@@ -87,7 +87,7 @@ int main(void) {
     /* Get window size and ratio */
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    const float ratio = width / (float)height;
+    //const float ratio = width / (float)height;
 
     glViewport(0, 0, width, height);
 
