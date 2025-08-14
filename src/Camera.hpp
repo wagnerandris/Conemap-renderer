@@ -7,7 +7,7 @@
 
 class Camera {
 public:
-	Camera(glm::vec3 _eye, glm::vec3 _center, glm::vec3 _up, float _aspect);
+	Camera(glm::vec3 const& _eye, glm::vec3 const& _center, glm::vec3 const& _up, float _aspect);
 
 	// getters
 	inline glm::mat4 get_view_matrix() const { return view_matrix; }
@@ -16,20 +16,20 @@ public:
 
 	// setters
 	// view
-	void set_eye(const glm::vec3 _eye);
-	void set_center(const glm::vec3 _center);
-	void set_up(const glm::vec3 _up);
+	void set_eye(glm::vec3 const& _eye);
+	void set_center(glm::vec3 const& _center);
+	void set_up(glm::vec3 const& _up);
 
 	// projection
-	void set_fovy(const float _fovy);
-	void set_aspect(const float _aspect);
-	void set_zNear(const float _zNear);
-	void set_zFar(const float _zFar);
+	void set_fovy(float _fovy);
+	void set_aspect(float _aspect);
+	void set_zNear(float _zNear);
+	void set_zFar(float _zFar);
 
 	// movements
-	void move(const glm::vec3 diff);
-	void rotate_eye();
-	void rotate_center();
+	void move(glm::vec3 const& diff);
+	void rotate_eye(float phi, float theta);
+	void rotate_center(float phi, float theta);
 	void zoom();
 
 private:

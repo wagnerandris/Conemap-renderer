@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 
 // GLM
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -77,7 +78,7 @@ void Scene::create_scene_objects() {
 
 // TODO camera init
 // TODO change ratio when window changes
-Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 16.0f/9.0f)) {
+Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 16.0f/9.0f)), controls(Controls(camera)) {
 	create_shaders();
 	load_textures();
 	create_scene_objects();
@@ -112,6 +113,8 @@ void Scene::render() {
 
   glUniformMatrix4fv(worldViewMatrixLoc, 1, false,
                      glm::value_ptr(camera.get_view_matrix() * worldMatrix));
+	// glm::mat4 vm = camera.get_view_matrix();
+	// fprintf(stdout, "%f, %f, %f, %f\n", vm[0][0], vm[0][1], vm[0][2], vm[0][3]);
   glUniformMatrix4fv(projectionMatrixLoc, 1, false,
                      glm::value_ptr(camera.get_projection_matrix()));
   // TODO right projection?

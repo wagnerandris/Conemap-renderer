@@ -2,62 +2,74 @@
 
 // GLM
 #include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
-Camera::Camera(glm::vec3 _eye, glm::vec3 _center, glm::vec3 _up, float _aspect)
+Camera::Camera(glm::vec3 const& _eye, glm::vec3 const& _center, glm::vec3 const& _up, float _aspect)
     : eye(_eye), center(_center), up(_up), aspect(_aspect) {
   view_matrix = glm::lookAt(eye, center, up);
   projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-void Camera::set_eye(const glm::vec3 _eye) {
+void Camera::set_eye(glm::vec3 const& _eye) {
   eye = _eye;
   view_matrix = glm::lookAt(eye, center, up);
 }
 
-void Camera::set_center(const glm::vec3 _center) {
+void Camera::set_center(glm::vec3 const& _center) {
 	center = _center;
   view_matrix = glm::lookAt(eye, center, up);
 }
 
-void Camera::set_up(const glm::vec3 _up) {
+void Camera::set_up(glm::vec3 const& _up) {
 	up = _up;
   view_matrix = glm::lookAt(eye, center, up);
 }
 
-void Camera::set_fovy(const float _fovy) {
+void Camera::set_fovy(float _fovy) {
 	fovy = _fovy;
   projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-void Camera::set_aspect(const float _aspect) {
+void Camera::set_aspect(float _aspect) {
 	aspect = _aspect;
   projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-void Camera::set_zNear(const float _zNear) {
+void Camera::set_zNear(float _zNear) {
 	zNear = _zNear;
   projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-void Camera::set_zFar(const float _zFar) {
+void Camera::set_zFar(float _zFar) {
 	zFar = _zFar;
   projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
-void Camera::move(const glm::vec3 diff) {
+void Camera::move(glm::vec3 const& diff) {
 	eye += diff;
 	center += diff;
   view_matrix = glm::lookAt(eye, center, up);
 }
 
-// TODO
-void Camera::rotate_eye() {
+// TODO gimbal lock
+void Camera::rotate_eye(float phi, float theta) {
+	glm::vec3 center_to_eye = eye - center;
+
+	glm::vec3 new_center_to_eye =
 	// horizontal: rotate center to eye around up
+	glm::rotate(phi, up) *
 	// vertical: rotate center to eye around center to eye x up
+	glm::rotate(theta, glm::cross(center_to_eye, up)) * // TODO sign change when looking horizontally
+	glm::vec4(center_to_eye, 0.0f);
+
+	glm::vec3 new_eye = center + new_center_to_eye;
+	set_eye(new_eye);
 }
 
-void Camera::rotate_center() {
+void Camera::rotate_center(float phi, float theta) {
 	// horizontal: rotate eye to center around up
 	// vertical: rotate eye to center around eye to center x up
 }

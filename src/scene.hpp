@@ -4,6 +4,7 @@
 // Utils
 #include "ConeSteppingObject.hpp"
 #include "Camera.hpp"
+#include "Controls.hpp"
 
 class Scene {
 
@@ -29,7 +30,11 @@ class Scene {
 public:
 	Scene();
 	~Scene();
+
   // rendering
   void render();
+
+  // controls
+  Controls controls;
 };
 #endif
