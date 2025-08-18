@@ -1,9 +1,11 @@
 #include "Camera.hpp"
 
 // GLM
+#include <glm/common.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_float4x4.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -61,8 +63,8 @@ void Camera::rotate_eye(float phi, float theta) {
 	glm::vec3 new_center_to_eye =
 	// horizontal: rotate center to eye around up
 	glm::rotate(phi, up) *
-	// vertical: rotate center to eye around center to eye x up
-	glm::rotate(theta, glm::cross(center_to_eye, up)) * // TODO sign change when looking horizontally
+	// vertical: rotate center to eye around right (up x center to eye)
+	glm::rotate(-theta, glm::normalize(glm::cross(up, center_to_eye))) *
 	glm::vec4(center_to_eye, 0.0f);
 
 	glm::vec3 new_eye = center + new_center_to_eye;
@@ -70,10 +72,21 @@ void Camera::rotate_eye(float phi, float theta) {
 }
 
 void Camera::rotate_center(float phi, float theta) {
+	glm::vec3 eye_to_center = center - eye;
+
+	glm::vec3 new_eye_to_center =
 	// horizontal: rotate eye to center around up
-	// vertical: rotate eye to center around eye to center x up
+	glm::rotate(phi, up) *
+	// vertical: rotate eye to center around right (eye to center x up)
+	glm::rotate(theta, glm::normalize(glm::cross(eye_to_center, up))) *
+	glm::vec4(eye_to_center, 0.0f);
+
+	glm::vec3 new_center = eye + new_eye_to_center;
+	set_center(new_center);
 }
 
-void Camera::zoom() {
+void Camera::zoom(double yoffset) {
+	glm::vec3 eye_to_center = center - eye;
+	set_eye(eye + eye_to_center * static_cast<float>(yoffset));
 	// change fovy or move towards center or both?
 }

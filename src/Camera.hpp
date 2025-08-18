@@ -9,15 +9,17 @@ class Camera {
 public:
 	Camera(glm::vec3 const& _eye, glm::vec3 const& _center, glm::vec3 const& _up, float _aspect);
 
-	// getters
+	// matrices
 	inline glm::mat4 get_view_matrix() const { return view_matrix; }
 	inline glm::mat4 get_projection_matrix() const { return projection_matrix; }
 	inline glm::mat4 get_view_projection_matrix() const { return projection_matrix * view_matrix; }
 
-	// setters
 	// view
+	inline glm::vec3 get_eye() const { return eye; }
 	void set_eye(glm::vec3 const& _eye);
+	inline glm::vec3 get_center() const { return center; }
 	void set_center(glm::vec3 const& _center);
+	inline glm::vec3 get_up() const { return up; }
 	void set_up(glm::vec3 const& _up);
 
 	// projection
@@ -30,7 +32,7 @@ public:
 	void move(glm::vec3 const& diff);
 	void rotate_eye(float phi, float theta);
 	void rotate_center(float phi, float theta);
-	void zoom();
+	void zoom(double yoffset);
 
 private:
 	// view

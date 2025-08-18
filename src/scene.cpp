@@ -64,13 +64,13 @@ void Scene::create_scene_objects() {
   // setup vertices
   const std::vector<ConeSteppingVertex> vertices = {
       // position             normal     tangent    binormal   uv
-      {{-1.0f, -1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0.0f, 0.0f}},
-      {{1.0f, -1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {1.0f, 0.0f}},
-      {{1.0f, 1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {1.0f, 1.0f}},
+      {{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
+      {{1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 0.0f}},
+      {{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
 
-      {{1.0f, 1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {1.0f, 1.0f}},
-      {{-1.0f, 1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0.0f, 1.0f}},
-      {{-1.0f, -1.0f, 0.0f}, {0, 0, 1}, {1, 0, 0}, {0, 1, 0}, {0.0f, 0.0f}},
+      {{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
+      {{-1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 1.0f}},
+      {{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
   };
 
   quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
@@ -78,7 +78,7 @@ void Scene::create_scene_objects() {
 
 // TODO camera init
 // TODO change ratio when window changes
-Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 16.0f/9.0f)), controls(Controls(camera)) {
+Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 16.0f/9.0f)), controls(Controls(camera)) {
 	create_shaders();
 	load_textures();
 	create_scene_objects();
@@ -97,9 +97,12 @@ Scene::~Scene() {
 }
 
 void Scene::render() {
+	glEnable(GL_CULL_FACE);
+  glClearColor(0.1f, 0.2f, 0.6f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
   // set time dependent stuff
-  glm::mat4 worldMatrix =
-      glm::rotate((float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+  glm::mat4 worldMatrix = glm::identity<glm::mat4>();
   
   // set program
   glUseProgram(program);

@@ -35,9 +35,9 @@ void main(void)
 	s = normalize(vec3(dot(v,eyeSpaceTangent),dot(v,eyeSpaceBinormal),a));
 
 	// pick _one_ of the following variations
-	//d = intersect_cone_fixed(texCoord,s);
-	//d = intersect_cone_loop(texCoord,s);
-	d = intersect_cone_exact(texCoord,s);
+	// d = intersect_cone_fixed(texCoord,s);
+	d = intersect_cone_loop(texCoord,s);
+	// d = intersect_cone_exact(texCoord,s);
 
 	// get rm and color texture points
 	uv=texCoord+s.xy*d;

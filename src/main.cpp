@@ -123,13 +123,17 @@ int main(void) {
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	static double elapsed_time = glfwGetTime();
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
+		double now = glfwGetTime();
+		double delta_time = now - elapsed_time;
+		elapsed_time = now;
+		// move camera if key is pressed
+    scene->controls.move(delta_time);
 
     /* Render frame */
-    glClearColor(0.1f, 0.2f, 0.6f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // TODO to render code?
     scene->render();
 
     /* Render ImGui */
