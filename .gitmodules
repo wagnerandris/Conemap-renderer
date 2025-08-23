@@ -1,3 +1,6 @@
 [submodule "external/imgui/imgui"]
 	path = external/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "external/imgui-filebrowser"]
+	path = external/imgui-filebrowser
+	url = https://github.com/AirGuanZ/imgui-filebrowser.git

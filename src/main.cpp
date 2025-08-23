@@ -13,9 +13,10 @@
 #include <glm/gtx/transform.hpp>
 
 // ImGui
+#include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <imgui.h>
+#include <external/imgui-filebrowser/imfilebrowser.h>
 
 // STD
 #include <cstdio>
@@ -100,13 +101,7 @@ int main(void) {
     fprintf(stderr, "Error during the initialization of glew.");
     return -1;
   }
-
-  /* Start ImGui*/
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGui_ImplGlfw_InitForOpenGL(window, true);
-  ImGui_ImplOpenGL3_Init();
-
+  
   /* Set vsync */
   glfwSwapInterval(1);
 
@@ -123,41 +118,73 @@ int main(void) {
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+  /* Start ImGui*/
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init();
+
+  // create a file browser instance
+  ImGui::FileBrowser fileDialog;
+
 	static double elapsed_time = glfwGetTime();
 
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
+  	// calculate elapsed time
 		double now = glfwGetTime();
 		double delta_time = now - elapsed_time;
 		elapsed_time = now;
-		// move camera if key is pressed
-    scene->controls.move(delta_time);
 
-    /* Render frame */
-    scene->render();
+  /* Poll for and process events */
 
-    /* Render ImGui */
+		// see if imgui captures events
+		keyboard_to_imgui = io.WantCaptureKeyboard;
+		mouse_to_imgui = io.WantCaptureMouse;
+
+		// execute callback functions as needed
+    glfwPollEvents();
+
+  /* Render ImGui */
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame(); // After this ImGui commands can be called until
                                // ImGui::Render()
 
     ImGui::NewFrame();
-    /* Compose ImGui here */
-    ImGui::ShowDemoWindow(); // TODO delete
-    ImGui::Render();
 
+  /* Compose ImGui here */
+    if(ImGui::Begin("dummy window"))
+      {
+        // open file dialog when user clicks this button
+				if(ImGui::Button("open file dialog"))
+					fileDialog.Open();
+			}
+			ImGui::End();
+		
+			fileDialog.Display();
+		
+			if(fileDialog.HasSelected())
+			{
+				printf("Selected filename %s\n", fileDialog.GetSelected().c_str());
+				fileDialog.ClearSelected();
+			}
+		ImGui::ShowDemoWindow(); // TODO delete
+		ImGui::Render();
+
+  /* Render frame */
+		// move camera if key is being pressed
+    scene->controls.move(delta_time);
+
+		// render
+    scene->render();
+
+		// render ImGui on top
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    /* Swap front and back buffers */
+  /* Swap front and back buffers */
     glfwSwapBuffers(window);
-    
-    /* Poll for and process events */
-
-		// see if imgui captures events
-		keyboard_to_imgui = ImGui::GetIO().WantCaptureKeyboard;
-		mouse_to_imgui = ImGui::GetIO().WantCaptureMouse;
-
-    glfwPollEvents();
   }
 
 	/* Delete scene */
