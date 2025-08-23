@@ -12,10 +12,10 @@ fs = import('fs')
 
 # shaders
 fs.copyfile('src/ConeStepMapping.vert', install : true, install_dir : '.')
-fs.copyfile('src/ConeStepMapping.frag', install : true, install_dir : '.')
+fs.copyfile('src/RelaxedConeStepMapping.frag', install : true, install_dir : '.')
 
 # assets
-fs.copyfile('assets/pyramids.png-step.png', install: true, install_dir: '.')
+fs.copyfile('assets/pyramids_relaxed_cone_map.png', install: true, install_dir: '.')
 fs.copyfile('assets/wood.png', install: true, install_dir: '.')
 
 executable('Conemap renderer',

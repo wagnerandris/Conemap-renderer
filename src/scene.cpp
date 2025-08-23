@@ -32,7 +32,7 @@ void Scene::create_shaders() {
 	}
 
   const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  load_shader_from_file(fragment_shader, "ConeStepMapping.frag");
+  load_shader_from_file(fragment_shader, "RelaxedConeStepMapping.frag");
 
 	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
@@ -128,7 +128,7 @@ void Scene::render() {
   glUniform4f(diffuseLoc, 1.0f, 0.5f, 0.3f, 1.0f);
   glUniform1f(depthLoc, 1.0f);
   glUniform1f(texsizeLoc, 256.0f);
-  glUniform1i(conestepsLoc, 16);
+  glUniform1i(conestepsLoc, 8);
 
   // quad
   // bind textures
