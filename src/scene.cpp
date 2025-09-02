@@ -82,10 +82,6 @@ Scene::~Scene() {
 	// geometry
 	delete quad;
 
-	// textures
-	glDeleteTextures(1, &stepmapTexID);
-	glDeleteTextures(1, &texmapTexID);
-
 	// shaders
 	glDeleteProgram(program);
 }

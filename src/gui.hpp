@@ -9,35 +9,42 @@
 
 #include <algorithm>
 
-struct Resource {
+struct TextureResource {
   std::filesystem::path path;
   std::string name;
   GLuint id = 0;
 };
 
-struct ResourceSelect {
+struct TextureResourceSelect {
   std::string label;
 
-  std::vector<Resource> resources;
+  std::vector<TextureResource> resources;
   unsigned int selected_index = 0;
   GLuint &selected_id;
   GLuint (*load_func)(std::filesystem::path);
 
   ImGui::FileBrowser fileDialog;
 
-  ResourceSelect(std::string label_, GLuint& selected_id_, GLuint (*load_func_)(std::filesystem::path)) : label(label_), selected_id(selected_id_), load_func(load_func_) {}
+  TextureResourceSelect(std::string label_, GLuint &selected_id_,
+                        GLuint (*load_func_)(std::filesystem::path))
+      : label(label_), selected_id(selected_id_), load_func(load_func_) {}
+
+  ~TextureResourceSelect() {
+		for (auto res : resources) {
+			glDeleteTextures(1, &res.id);
+		}
+  }
 
   void load_file(std::filesystem::path path) {
-    // TODO popup error messages?
     auto it = std::find_if(resources.begin(), resources.end(),
-                           [&path](const Resource &res) {
+                           [&path](const TextureResource &res) {
                              return std::filesystem::equivalent(res.path, path);
                            });
 
     if (it == resources.end()) {
       GLuint id = load_func(path);
       if (id) {
-        resources.push_back(Resource{path, path.filename(), id});
+        resources.push_back(TextureResource{path, path.filename(), id});
         selected_index = resources.size() - 1;
         selected_id = resources[selected_index].id;
       }
@@ -65,7 +72,7 @@ struct ResourceSelect {
         if (filter.PassFilter(resources[i].name.c_str()))
           if (ImGui::Selectable(resources[i].name.c_str(), is_selected)) {
             selected_index = i;
-						selected_id = resources[selected_index].id;
+            selected_id = resources[selected_index].id;
           }
 
         if (ImGui::IsItemHovered())
@@ -98,21 +105,32 @@ struct ResourceSelect {
 };
 
 class Gui {
-  ResourceSelect cone_maps;
-  ResourceSelect textures;
+  TextureResourceSelect cone_maps;
+  TextureResourceSelect textures;
   // ResourceSelect models; TODO
 
 public:
-  Gui(GLuint &cone_map_id, GLuint &texture_id) :
-    cone_maps(ResourceSelect("Cone map", cone_map_id,
-                               [](std::filesystem::path path) {
-                                 return load_texture_from_file(path.c_str());
-                               })),
-    textures(ResourceSelect("Texture", texture_id,
-                               [](std::filesystem::path path) {
-                                 return load_texture_from_file(path.c_str());
-                               }))
-    {}
+  Gui(GLuint &cone_map_id, GLuint &texture_id,
+      std::vector<std::string> &input_cone_maps,
+      std::vector<std::string> &input_textures) :
+				cone_maps(TextureResourceSelect(
+							"Cone map", cone_map_id,
+							[](std::filesystem::path path) {
+								return load_texture_from_file(path.c_str());
+              })),
+        textures(TextureResourceSelect(
+        			"Texture", texture_id,
+							[](std::filesystem::path path) {
+								return load_texture_from_file(path.c_str());
+							}))
+	{
+    for (std::filesystem::path path : input_cone_maps) {
+      cone_maps.load_file(path);
+    }
+    for (std::filesystem::path path : input_textures) {
+      textures.load_file(path);
+    }
+  }
 
   void compose() {
     texture_select();
