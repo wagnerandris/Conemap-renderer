@@ -12,11 +12,6 @@ class Scene {
   GLuint program;
   void create_shaders();
 
-  // textures
-  GLuint stepmapTexID;
-  GLuint texmapTexID;
-  void load_textures();
-
   // camera
   Camera camera;
 
@@ -30,6 +25,10 @@ class Scene {
 public:
 	Scene();
 	~Scene();
+  
+  // textures
+  GLuint stepmapTexID;
+  GLuint texmapTexID;
 
   // rendering
   void render();

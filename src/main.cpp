@@ -5,8 +5,6 @@
 #include <GLFW/glfw3.h>
 
 // GLM
-#include <cstddef>
-#include <filesystem>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
@@ -18,15 +16,16 @@
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <external/imgui-filebrowser/imfilebrowser.h>
 
 // STD
 #include <cstdio>
+#include <cstddef>
 
 #include "scene.hpp"
-
+#include "gui.hpp"
 
 static Scene* scene;
+static Gui* gui;
 static bool keyboard_to_imgui;
 static bool mouse_to_imgui;
 
@@ -75,31 +74,6 @@ static void framebuffer_size_callback(GLFWwindow *window, int width, int height)
   /// set camera aspect ratio
 	scene->controls.set_aspect(width / (float)height);
 	
-}
-
-// TODO separate file
-void file_combo(const std::vector<std::string> names, unsigned int& selected_idx, const std::string label) {
-	const char* combo_preview_value = names[selected_idx].c_str();
-	if (ImGui::BeginCombo(label.c_str(), combo_preview_value))
-	{
-    	static ImGuiTextFilter filter;
-    	if (ImGui::IsWindowAppearing())
-    	{
-        	ImGui::SetKeyboardFocusHere();
-        	filter.Clear();
-    	}
-    	ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F);
-    	filter.Draw("##Filter", -FLT_MIN);
-
-    	for (size_t i = 0; i < names.size(); i++)
-    	{
-        	const bool is_selected = (selected_idx == i);
-        	if (filter.PassFilter(names[i].c_str()))
-            	if (ImGui::Selectable(names[i].c_str(), is_selected))
-                	selected_idx = i;
-    	}
-    	ImGui::EndCombo();
-	}
 }
 
 int main(void) {
@@ -153,8 +127,8 @@ int main(void) {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
 
-  // create a file browser instance
-  ImGui::FileBrowser fileDialog;
+	/* Create gui */
+  gui = new Gui(scene->stepmapTexID, scene->texmapTexID);
 
 	static double elapsed_time = glfwGetTime();
 
@@ -180,41 +154,8 @@ int main(void) {
                                // ImGui::Render()
 
     ImGui::NewFrame();
-
-  /* Compose ImGui here */
-  	static std::vector<std::filesystem::path>* path_vector;
-  	static std::vector<std::string>* name_vector;
-		static std::vector<std::filesystem::path> cone_maps = {"pyramids_cone_map.png"};
-		static std::vector<std::string> cone_map_names = {cone_maps[0].c_str()};
-		static unsigned int selected_cone_map_idx = 0;
-		static std::vector<std::filesystem::path> textures = {"wood.png"};
-		static std::vector<std::string> texture_names = {cone_maps[0].c_str()};
-		static unsigned int selected_texture_idx = 0;
-    if(ImGui::Begin("Textures"))
-      {
-      	file_combo(cone_map_names, selected_cone_map_idx, "cone map");
-				if(ImGui::Button("Add cone map")) { // TODO put these in the fuction as well (only makes sense in separate file/struct)
-					path_vector = &cone_maps;
-					name_vector = &cone_map_names;
-					fileDialog.Open();
-				}
-      	file_combo(texture_names, selected_texture_idx, "texture");
-				if(ImGui::Button("Add texture")) {
-					path_vector = &textures;
-					name_vector = &texture_names;
-					fileDialog.Open();
-				}
-			}
-			ImGui::End();
-		
-			fileDialog.Display();
-		
-			if(fileDialog.HasSelected())
-			{
-				path_vector->push_back(fileDialog.GetSelected());
-				name_vector->push_back(path_vector->back().filename().string());
-				fileDialog.ClearSelected();
-			}
+  /* Compose ImGui */
+		gui->compose();
 		ImGui::ShowDemoWindow(); // TODO delete
 		ImGui::Render();
 
@@ -231,6 +172,9 @@ int main(void) {
   /* Swap front and back buffers */
     glfwSwapBuffers(window);
   }
+
+	/* Dele gui */
+	delete gui;
 
 	/* Delete scene */
 	delete scene;

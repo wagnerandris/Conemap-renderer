@@ -54,11 +54,6 @@ void Scene::create_shaders() {
 	}
 }
 
-void Scene::load_textures() {
-  stepmapTexID = load_texture_from_file("pyramids.png-step.png");
-  texmapTexID = load_texture_from_file("wood.png");
-}
-
 void Scene::create_scene_objects() {
   // quad
   // setup vertices
@@ -80,7 +75,6 @@ void Scene::create_scene_objects() {
 // TODO change ratio when window changes
 Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 16.0f/9.0f)), controls(Controls(camera)) {
 	create_shaders();
-	load_textures();
 	create_scene_objects();
 }
 

@@ -5,8 +5,8 @@
 
 ConeSteppingObject::ConeSteppingObject(
     const std::vector<ConeSteppingVertex> vertices,
-    const GLuint stepmapTex, const GLuint texmapTex)
-    : stepmapTex(stepmapTex), texmapTex(texmapTex) {
+    const GLuint& stepmapTex_, const GLuint& texmapTex_)
+    : stepmapTex(stepmapTex_), texmapTex(texmapTex_) {
 
   // create VAO
   glGenVertexArrays(1, &vao);

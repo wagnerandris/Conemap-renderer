@@ -24,10 +24,10 @@ struct ConeSteppingVertex {
 struct ConeSteppingObject {
 	GLuint vao;
 	GLuint vbo;
-	GLuint stepmapTex;
-	GLuint texmapTex;
+	const GLuint& stepmapTex;
+	const GLuint& texmapTex;
 
-	ConeSteppingObject(const std::vector<ConeSteppingVertex> vertices, const GLuint stepmapTex, const GLuint texmapTex);
+	ConeSteppingObject(const std::vector<ConeSteppingVertex> vertices, const GLuint& stepmapTex, const GLuint& texmapTex);
 	~ConeSteppingObject();
 };
 
