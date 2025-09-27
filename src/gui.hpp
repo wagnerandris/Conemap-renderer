@@ -70,10 +70,12 @@ struct TextureResourceSelect {
         const bool is_selected = (selected_index == i);
 
         if (filter.PassFilter(resources[i].name.c_str()))
+        	ImGui::PushID(resources[i].id);
           if (ImGui::Selectable(resources[i].name.c_str(), is_selected)) {
             selected_index = i;
             selected_id = resources[selected_index].id;
           }
+					ImGui::PopID();
 
         if (ImGui::IsItemHovered())
           ImGui::SetTooltip("%s", resources[i].path.c_str());

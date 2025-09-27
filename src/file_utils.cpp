@@ -44,18 +44,12 @@ GLuint load_texture_from_file(const char *filepath) {
   stbi_set_flip_vertically_on_load(true); // OpenGL expects 0.0 at bottom
 
   int width, height, channels;
-  unsigned char *data = stbi_load(filepath, &width, &height, &channels, 0);
+  unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
   if (!data) {
     std::fprintf(stderr, "Could not load texture from %s.\n", filepath);
     return 0;
   }
-
-  if (channels != 4) {
-    std::fprintf(stderr, "%s is not a 4 channel texture.\n", filepath);
-    stbi_image_free(data);
-    return 0;
-  }
-
+  
   GLuint textureID;
   glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
 

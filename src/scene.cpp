@@ -126,7 +126,7 @@ void Scene::render() {
   // set uniform values
   glUniform4f(ambientLoc, 0.1f, 0.1f, 0.1f, 1.0f);
   glUniform4f(diffuseLoc, 1.0f, 0.5f, 0.3f, 1.0f);
-  glUniform1f(depthLoc, 1.0f);
+  glUniform1f(depthLoc, 0.125f); // TODO depth factor setting
   glUniform1f(texsizeLoc, 256.0f);
   glUniform1i(conestepsLoc, 8);
 

@@ -32,7 +32,7 @@ void main(void)
 	// ray intersect in view direction
 	p = eyeSpaceVert;
 	v = normalize(p);
-	a = dot(eyeSpaceNormal,-v)/depth;
+	a = dot(eyeSpaceNormal,-v)/depth; // TODO depth factor as setting
 	s = normalize(vec3(dot(v,eyeSpaceTangent),dot(v,eyeSpaceBinormal),a));
 
 	// pick _one_ of the following variations
@@ -71,14 +71,17 @@ float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds)
 {
 	// minimum feature size parameter
 	float w = 1.0 / texsize;
+
 	// the "not Z" component of the direction vector
 	// (requires that the vector ds was normalized!)
-	float iz = sqrt(1.0-ds.z*ds.z);
+	float iz = sqrt(1.0 - ds.z*ds.z); // horizontal length of normalized view vector (ds)
 	// my starting location (is at z=1,
 	// and moving down so I don't have
 	// to invert height maps)
+
 	// texture lookup
 	vec4 t;
+
 	// scaling distance along vector ds
 	float sc=0.0;
 
@@ -90,7 +93,7 @@ float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds)
 	// I'm using heightmaps)
 	// find the starting location and height
 	t=texture(stepmap,dp);
-	while (1.0-ds.z*sc > t.r)
+	while (1.0 - ds.z*sc > t.r)
 	{
 		// right, I need to take one step.
 		// I use the current height above the texture,
@@ -98,26 +101,26 @@ float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds)
 		// to size a single step. So it is fast and
 		// precise! (like a coneified version of
 		// "space leaping", but adapted from voxels)
-		ss = (1.0-ds.z*sc-t.r) / (ds.z + iz/(t.g*t.g));
+		ss = (1.0 - ds.z*sc - t.r) / (ds.z + iz / (t.g*t.g));
 		sc += w + ss;
 		// find the new location and height
 		t=texture(stepmap,dp+ds.xy*sc);
 	}
 	// back off one step
 	sc -= w;
-	
+
 	// binary search
 	for (int i = conesteps; i > 0; --i) {
-		if (t.r < 1.0 - ds.z * (sc - w)) {
+		if (1.0 - ds.z * (sc - w) < t.r) {
 			ss *= 0.5f;
 			sc -= ss;
 		} else
-		if ((t.r > 1.0 - ds.z * (sc + w))) {
+		if (1.0 - ds.z * (sc + w) > t.r) {
 			ss *= 0.5f;
 			sc += ss;
 		} else {
 			// return the vector length needed to hit the height-map
-			return (sc);
+			break;
 		}
 	}
 	return sc;
