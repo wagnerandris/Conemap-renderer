@@ -1,10 +1,6 @@
 #version 330 core
 
-uniform vec4 ambient; // TODO remove
-uniform vec4 diffuse; // TODO remove
 uniform float depth;
-uniform float u_texsize;
-uniform float v_texsize;
 uniform int conesteps;
 uniform int display_mode;
 
@@ -13,69 +9,14 @@ in vec3 eyeSpaceVert;
 in vec3 eyeSpaceTangent;
 in vec3 eyeSpaceBinormal;
 in vec3 eyeSpaceNormal;
-in vec3 eyeSpaceLight; // TODO remove
 
 uniform sampler2D stepmap;
 uniform sampler2D texmap;
 
-float intersect_cone_fixed(in vec2 dp,in vec3 ds);
-float intersect_cone_loop(in vec2 dp,in vec3 ds);
-float intersect_cone_exact(in vec2 dp,in vec3 ds);
-float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds);
-
-void main(void)
-{
-
-	vec4 t,c;
-	vec3 p,v,l,s;
-	vec2 uv;
-	float d,a;
-
-	// ray intersect in view direction
-	p = eyeSpaceVert;
-	v = normalize(p);
-	a = dot(eyeSpaceNormal,-v)/depth; // TODO depth factor as setting
-	s = normalize(vec3(dot(v,eyeSpaceTangent),dot(v,eyeSpaceBinormal),a));
-
-	d = intersect_relaxed_cone_exact(texCoord,s);
-	uv=texCoord+s.xy*d;
-
-	switch (display_mode) {
-		case 0: // Color texture
-			gl_FragColor = texture(texmap,uv);
-			break;
-		case 1: // Heights
-			t=texture(stepmap,uv);
-			gl_FragColor = vec4(vec3(t.x), 1.0);
-			break;
-		case 2: // Cones
-			t=texture(stepmap,uv);
-			gl_FragColor = vec4(vec3(t.y), 1.0);
-			break;
-		case 3: // Normals
-			// expand normal from normal map in local polygon space
-			// blue = df/dx
-			// alpha = df/dy
-			// note: I _need_ the texture size to scale the normal properly!
-			t=texture(stepmap,uv);
-			t.xy=t.ba-0.5;
-			t.x = -t.x * depth * u_texsize;
-			t.y = -t.y * depth * v_texsize;
-			t.z = 1.0;
-			t.w = 1.0;
-			// t = worldViewMatrix * t;
-			t.xyz = normalize(t.xyz);
-			// t.xyz=normalize(t.x*eyeSpaceTangent+t.y*eyeSpaceBinormal+t.z*eyeSpaceNormal);
-
-			gl_FragColor = t;
-			break;
-	}
-}
-
-float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds)
-{
+float intersect_relaxed_cone_exact(vec2 dp, vec3 ds, ivec2 texsize)
+{	
 	// minimum feature size parameter
-	float w = 1.0 / min(u_texsize, v_texsize);
+	float w = 1.0 / min(texsize.x, texsize.y);
 
 	// the "not Z" component of the direction vector
 	// (requires that the vector ds was normalized!)
@@ -129,6 +70,53 @@ float intersect_relaxed_cone_exact(in vec2 dp, in vec3 ds)
 		}
 	}
 	return sc;
+}
+
+void main(void) {
+	vec4 t,c;
+	vec3 p,v,l,s;
+	vec2 uv;
+	float d,a;
+
+	ivec2 texsize = textureSize(stepmap, 0);
+
+	// ray intersect in view direction
+	p = eyeSpaceVert;
+	v = normalize(p);
+	a = dot(eyeSpaceNormal,-v)/depth; // TODO depth factor as setting
+	s = normalize(vec3(dot(v,eyeSpaceTangent),dot(v,eyeSpaceBinormal),a));
+	
+	d = intersect_relaxed_cone_exact(texCoord, s, texsize);
+	uv=texCoord+s.xy*d;
+
+	switch (display_mode) {
+		case 0: // Color texture
+			gl_FragColor = texture(texmap,uv);
+			break;
+		case 1: // Heights
+			t=texture(stepmap,uv);
+			gl_FragColor = vec4(vec3(t.x), 1.0);
+			break;
+		case 2: // Cones
+			t=texture(stepmap,uv);
+			gl_FragColor = vec4(vec3(t.y), 1.0);
+			break;
+		case 3: // Normals
+			// expand normal from normal map in local polygon space
+			// blue = df/dx
+			// alpha = df/dy
+			// note: I _need_ the texture size to scale the normal properly!
+			t=texture(stepmap,uv);
+			t.xy=t.ba-0.5;
+			t.x = -t.x * depth * texsize.x;
+			t.y = -t.y * depth * texsize.y;
+			t.z = 1.0;
+			t.w = 1.0;
+			t.xyz = normalize(t.xyz);
+
+			gl_FragColor = t;
+			break;
+	}
 }
 
 

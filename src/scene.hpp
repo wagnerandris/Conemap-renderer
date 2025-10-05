@@ -15,9 +15,6 @@ class Scene {
 	// camera
 	Camera camera;
 
-	// lights
-	glm::vec3 light_pos = glm::vec3(5.0f, 5.0f, 5.0f);
-
 	// objects
 	ConeSteppingObject* quad;
 	void create_scene_objects();

@@ -100,38 +100,22 @@ void Scene::render() {
 	// get uniform locations and set uniform values
 	// vertex
 	GLuint worldViewMatrixLoc = glGetUniformLocation(program, "worldViewMatrix");
-	GLuint projectionMatrixLoc =
-			glGetUniformLocation(program, "projectionMatrix");
-	GLuint eyeSpaceLightLoc = glGetUniformLocation(program, "inEyeSpaceLight");
+	GLuint projectionMatrixLoc = glGetUniformLocation(program, "projectionMatrix");
 
 	glUniformMatrix4fv(worldViewMatrixLoc, 1, false,
 										 glm::value_ptr(camera.get_view_matrix() * worldMatrix));
-	// glm::mat4 vm = camera.get_view_matrix();
-	// fprintf(stdout, "%f, %f, %f, %f\n", vm[0][0], vm[0][1], vm[0][2], vm[0][3]);
 	glUniformMatrix4fv(projectionMatrixLoc, 1, false,
 										 glm::value_ptr(camera.get_projection_matrix()));
-	// TODO right projection?
-	// glUniform3fv(eyeSpaceLightLoc, 1, glm::value_ptr(light_pos));
-	glUniform3fv(eyeSpaceLightLoc, 1,
-							 glm::value_ptr(camera.get_view_matrix() * glm::vec4(light_pos, 1.0f)));
 
 	// fragment
-	GLuint ambientLoc = glGetUniformLocation(program, "ambient");
-	GLuint diffuseLoc = glGetUniformLocation(program, "diffuse");
 	GLuint depthLoc = glGetUniformLocation(program, "depth");
-	GLuint u_texsizeLoc = glGetUniformLocation(program, "u_texsize");
-	GLuint v_texsizeLoc = glGetUniformLocation(program, "v_texsize");
 	GLuint conestepsLoc = glGetUniformLocation(program, "conesteps");
 	GLuint display_modeLoc = glGetUniformLocation(program, "display_mode");
 	GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
 	GLuint texmapLoc = glGetUniformLocation(program, "texmap");
 
 	// set uniform values
-	glUniform4f(ambientLoc, 0.1f, 0.1f, 0.1f, 1.0f); // TODO remove
-	glUniform4f(diffuseLoc, 1.0f, 0.5f, 0.3f, 1.0f); // TODO remove
 	glUniform1f(depthLoc, depth);
-	glUniform1f(u_texsizeLoc, 256.0f);
-	glUniform1f(v_texsizeLoc, 256.0f);
 	glUniform1i(conestepsLoc, 8);
 	glUniform1i(display_modeLoc, display_mode);
 
