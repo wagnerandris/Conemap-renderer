@@ -10,50 +10,50 @@
 #include <glm/gtx/transform.hpp>
 
 Camera::Camera(glm::vec3 const& _eye, glm::vec3 const& _center, glm::vec3 const& _up, float _aspect)
-    : eye(_eye), center(_center), up(_up), aspect(_aspect) {
-  view_matrix = glm::lookAt(eye, center, up);
-  projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
+		: eye(_eye), center(_center), up(_up), aspect(_aspect) {
+	view_matrix = glm::lookAt(eye, center, up);
+	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::set_eye(glm::vec3 const& _eye) {
-  eye = _eye;
-  view_matrix = glm::lookAt(eye, center, up);
+	eye = _eye;
+	view_matrix = glm::lookAt(eye, center, up);
 }
 
 void Camera::set_center(glm::vec3 const& _center) {
 	center = _center;
-  view_matrix = glm::lookAt(eye, center, up);
+	view_matrix = glm::lookAt(eye, center, up);
 }
 
 void Camera::set_up(glm::vec3 const& _up) {
 	up = _up;
-  view_matrix = glm::lookAt(eye, center, up);
+	view_matrix = glm::lookAt(eye, center, up);
 }
 
 void Camera::set_fovy(float _fovy) {
 	fovy = _fovy;
-  projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
+	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::set_aspect(float _aspect) {
 	aspect = _aspect;
-  projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
+	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::set_zNear(float _zNear) {
 	zNear = _zNear;
-  projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
+	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::set_zFar(float _zFar) {
 	zFar = _zFar;
-  projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
+	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
 }
 
 void Camera::move(glm::vec3 const& diff) {
 	eye += diff;
 	center += diff;
-  view_matrix = glm::lookAt(eye, center, up);
+	view_matrix = glm::lookAt(eye, center, up);
 }
 
 // TODO gimbal lock

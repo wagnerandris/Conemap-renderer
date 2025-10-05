@@ -13,11 +13,11 @@
 
 // vertex structure
 struct ConeSteppingVertex {
-  glm::vec3 pos;
-  glm::vec3 normal;
-  glm::vec3 tangent;
-  glm::vec3 binormal;
-  glm::vec2 uv;
+	glm::vec3 pos;
+	glm::vec3 normal;
+	glm::vec3 tangent;
+	glm::vec3 binormal;
+	glm::vec2 uv;
 };
 
 // object structure

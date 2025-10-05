@@ -23,24 +23,24 @@ uniform vec3 inEyeSpaceLight;
 
 void main()
 {
-    // pass through texture coordinates
-    texCoord = inTexCoord;
+		// pass through texture coordinates
+		texCoord = inTexCoord;
 
-    // transform vertex position to eye space
-    vec4 viewPos  = worldViewMatrix * vec4(inPosition, 1.0);
-    eyeSpaceVert = viewPos.xyz;
+		// transform vertex position to eye space
+		vec4 viewPos	= worldViewMatrix * vec4(inPosition, 1.0);
+		eyeSpaceVert = viewPos.xyz;
 
-    // compute world-space to eye-space transform for normals/tangents
-    mat3 normalMatrix = mat3(worldViewMatrix);
+		// compute world-space to eye-space transform for normals/tangents
+		mat3 normalMatrix = mat3(worldViewMatrix);
 
-    // transform normal, tangent, and binormal to eye space
-    eyeSpaceNormal   = normalize(normalMatrix * inNormal);
-    eyeSpaceTangent  = normalize(normalMatrix * inTangent);
-    eyeSpaceBinormal = normalize(normalMatrix * inBinormal);
+		// transform normal, tangent, and binormal to eye space
+		eyeSpaceNormal	 = normalize(normalMatrix * inNormal);
+		eyeSpaceTangent	 = normalize(normalMatrix * inTangent);
+		eyeSpaceBinormal = normalize(normalMatrix * inBinormal);
 
-    // pass through light coords
-    eyeSpaceLight = inEyeSpaceLight;
+		// pass through light coords
+		eyeSpaceLight = inEyeSpaceLight;
 
-    // final clip-space position
-    gl_Position = projectionMatrix * viewPos;
+		// final clip-space position
+		gl_Position = projectionMatrix * viewPos;
 }

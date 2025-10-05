@@ -18,57 +18,57 @@
 #include "scene.hpp"
 
 void Scene::create_shaders() {
-  // After shader compile
+	// After shader compile
 	GLint success;
 	GLchar infoLog[512];
 
-  // stages
-  const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  load_shader_from_file(vertex_shader, "ConeStepMapping.vert");
+	// stages
+	const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	load_shader_from_file(vertex_shader, "ConeStepMapping.vert");
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-    	glGetShaderInfoLog(vertex_shader, 512, NULL, infoLog);
-    	std::cerr << "Shader Compilation Error: " << infoLog << std::endl;
+			glGetShaderInfoLog(vertex_shader, 512, NULL, infoLog);
+			std::cerr << "Shader Compilation Error: " << infoLog << std::endl;
 	}
 
-  const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  load_shader_from_file(fragment_shader, "RelaxedConeStepMapping.frag");
+	const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	load_shader_from_file(fragment_shader, "RelaxedConeStepMapping.frag");
 
 	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-    	glGetShaderInfoLog(fragment_shader, 512, NULL, infoLog);
-    	std::cerr << "Shader Compilation Error: " << infoLog << std::endl;
+			glGetShaderInfoLog(fragment_shader, 512, NULL, infoLog);
+			std::cerr << "Shader Compilation Error: " << infoLog << std::endl;
 	}
 
-  // program
-  program = glCreateProgram();
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
+	// program
+	program = glCreateProgram();
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
+	glLinkProgram(program);
 
 	// After program link
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {
-    	glGetProgramInfoLog(program, 512, NULL, infoLog);
-    	std::cerr << "Program Linking Error: " << infoLog << std::endl;
+			glGetProgramInfoLog(program, 512, NULL, infoLog);
+			std::cerr << "Program Linking Error: " << infoLog << std::endl;
 	}
 }
 
 void Scene::create_scene_objects() {
-  // quad
-  // setup vertices
-  const std::vector<ConeSteppingVertex> vertices = {
-      // position             normal     tangent    binormal   uv
-      {{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
-      {{1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 0.0f}},
-      {{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
+	// quad
+	// setup vertices
+	const std::vector<ConeSteppingVertex> vertices = {
+			// position						 normal		 tangent		binormal	 uv
+			{{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
+			{{1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 0.0f}},
+			{{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
 
-      {{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
-      {{-1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 1.0f}},
-      {{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
-  };
+			{{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
+			{{-1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 1.0f}},
+			{{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
+	};
 
-  quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
+	quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
 }
 
 // TODO camera init
@@ -88,67 +88,72 @@ Scene::~Scene() {
 
 void Scene::render() {
 	glEnable(GL_CULL_FACE);
-  glClearColor(0.1f, 0.2f, 0.6f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-  // set time dependent stuff
-  glm::mat4 worldMatrix = glm::identity<glm::mat4>();
-  
-  // set program
-  glUseProgram(program);
+	glClearColor(0.1f, 0.2f, 0.6f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	// set time dependent stuff
+	glm::mat4 worldMatrix = glm::identity<glm::mat4>();
+	
+	// set program
+	glUseProgram(program);
 
-  // get uniform locations and set uniform values
-  // vertex
-  GLuint worldViewMatrixLoc = glGetUniformLocation(program, "worldViewMatrix");
-  GLuint projectionMatrixLoc =
-      glGetUniformLocation(program, "projectionMatrix");
-  GLuint eyeSpaceLightLoc = glGetUniformLocation(program, "inEyeSpaceLight");
+	// get uniform locations and set uniform values
+	// vertex
+	GLuint worldViewMatrixLoc = glGetUniformLocation(program, "worldViewMatrix");
+	GLuint projectionMatrixLoc =
+			glGetUniformLocation(program, "projectionMatrix");
+	GLuint eyeSpaceLightLoc = glGetUniformLocation(program, "inEyeSpaceLight");
 
-  glUniformMatrix4fv(worldViewMatrixLoc, 1, false,
-                     glm::value_ptr(camera.get_view_matrix() * worldMatrix));
+	glUniformMatrix4fv(worldViewMatrixLoc, 1, false,
+										 glm::value_ptr(camera.get_view_matrix() * worldMatrix));
 	// glm::mat4 vm = camera.get_view_matrix();
 	// fprintf(stdout, "%f, %f, %f, %f\n", vm[0][0], vm[0][1], vm[0][2], vm[0][3]);
-  glUniformMatrix4fv(projectionMatrixLoc, 1, false,
-                     glm::value_ptr(camera.get_projection_matrix()));
-  // TODO right projection?
-  glUniform3fv(eyeSpaceLightLoc, 1,
-               glm::value_ptr(camera.get_view_matrix() * glm::vec4(light_pos, 1.0f)));
+	glUniformMatrix4fv(projectionMatrixLoc, 1, false,
+										 glm::value_ptr(camera.get_projection_matrix()));
+	// TODO right projection?
+	// glUniform3fv(eyeSpaceLightLoc, 1, glm::value_ptr(light_pos));
+	glUniform3fv(eyeSpaceLightLoc, 1,
+							 glm::value_ptr(camera.get_view_matrix() * glm::vec4(light_pos, 1.0f)));
 
-  // fragment
-  GLuint ambientLoc = glGetUniformLocation(program, "ambient");
-  GLuint diffuseLoc = glGetUniformLocation(program, "diffuse");
-  GLuint depthLoc = glGetUniformLocation(program, "depth");
-  GLuint texsizeLoc = glGetUniformLocation(program, "texsize");
-  GLuint conestepsLoc = glGetUniformLocation(program, "conesteps");
-  GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
-  GLuint texmapLoc = glGetUniformLocation(program, "texmap");
+	// fragment
+	GLuint ambientLoc = glGetUniformLocation(program, "ambient");
+	GLuint diffuseLoc = glGetUniformLocation(program, "diffuse");
+	GLuint depthLoc = glGetUniformLocation(program, "depth");
+	GLuint u_texsizeLoc = glGetUniformLocation(program, "u_texsize");
+	GLuint v_texsizeLoc = glGetUniformLocation(program, "v_texsize");
+	GLuint conestepsLoc = glGetUniformLocation(program, "conesteps");
+	GLuint display_modeLoc = glGetUniformLocation(program, "display_mode");
+	GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
+	GLuint texmapLoc = glGetUniformLocation(program, "texmap");
 
-  // set uniform values
-  glUniform4f(ambientLoc, 0.1f, 0.1f, 0.1f, 1.0f);
-  glUniform4f(diffuseLoc, 1.0f, 0.5f, 0.3f, 1.0f);
-  glUniform1f(depthLoc, 0.125f); // TODO depth factor setting
-  glUniform1f(texsizeLoc, 256.0f);
-  glUniform1i(conestepsLoc, 8);
+	// set uniform values
+	glUniform4f(ambientLoc, 0.1f, 0.1f, 0.1f, 1.0f); // TODO remove
+	glUniform4f(diffuseLoc, 1.0f, 0.5f, 0.3f, 1.0f); // TODO remove
+	glUniform1f(depthLoc, depth);
+	glUniform1f(u_texsizeLoc, 256.0f);
+	glUniform1f(v_texsizeLoc, 256.0f);
+	glUniform1i(conestepsLoc, 8);
+	glUniform1i(display_modeLoc, display_mode);
 
-  // quad
-  // bind textures
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, quad->stepmapTex);
-  glUniform1i(stepmapLoc, 0);
+	// quad
+	// bind textures
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, quad->stepmapTex);
+	glUniform1i(stepmapLoc, 0);
 
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, quad->texmapTex);
-  glUniform1i(texmapLoc, 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, quad->texmapTex);
+	glUniform1i(texmapLoc, 1);
 
-  // bind vertex array
-  glBindVertexArray(quad->vao);
+	// bind vertex array
+	glBindVertexArray(quad->vao);
 
-  // draw
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+	// draw
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-  // unbind
-  glBindVertexArray(0);
-  glUseProgram(0);
+	// unbind
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 // TODO to window change callback
