@@ -57,6 +57,7 @@ void Scene::create_shaders() {
 void Scene::create_scene_objects() {
 	// quad
 	// setup vertices
+	// TODO automatically set up tangents and binormals
 	const std::vector<ConeSteppingVertex> vertices = {
 			// position						 normal		 tangent		binormal	 uv
 			{{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
@@ -109,14 +110,14 @@ void Scene::render() {
 
 	// fragment
 	GLuint depthLoc = glGetUniformLocation(program, "depth");
-	GLuint conestepsLoc = glGetUniformLocation(program, "conesteps");
+	GLuint stepsLoc = glGetUniformLocation(program, "steps");
 	GLuint display_modeLoc = glGetUniformLocation(program, "display_mode");
 	GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
 	GLuint texmapLoc = glGetUniformLocation(program, "texmap");
 
 	// set uniform values
 	glUniform1f(depthLoc, depth);
-	glUniform1i(conestepsLoc, 8);
+	glUniform1i(stepsLoc, steps);
 	glUniform1i(display_modeLoc, display_mode);
 
 	// quad

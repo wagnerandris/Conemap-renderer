@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
 	ImGui_ImplOpenGL3_Init();
 
 	/* Create gui */
-	gui = new Gui(scene->stepmapTexID, scene->texmapTexID, scene->depth, scene->display_mode, cone_maps, textures);
+	gui = new Gui(scene->stepmapTexID, scene->texmapTexID, scene->depth, scene->steps, scene->display_mode, cone_maps, textures);
 
 	static double elapsed_time = glfwGetTime();
 

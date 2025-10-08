@@ -1,7 +1,7 @@
 #version 330 core
 
 uniform float depth;
-uniform int conesteps;
+uniform int steps;
 uniform int display_mode;
 
 in vec2 texCoord;
@@ -16,7 +16,7 @@ uniform sampler2D texmap;
 float intersect_relaxed_cone_exact(vec2 dp, vec3 ds, ivec2 texsize)
 {	
 	// minimum feature size parameter
-	float w = 1.0 / min(texsize.x, texsize.y);
+	float w = 1.0 / max(texsize.x, texsize.y);
 
 	// the "not Z" component of the direction vector
 	// (requires that the vector ds was normalized!)
@@ -56,14 +56,16 @@ float intersect_relaxed_cone_exact(vec2 dp, vec3 ds, ivec2 texsize)
 	sc -= w;
 
 	// binary search
-	for (int i = conesteps; i > 0; --i) {
+	for (int i = steps; i > 0; --i) {
 		if (1.0 - ds.z * (sc - w) < t.r) {
 			ss *= 0.5f;
 			sc -= ss;
+			t=texture(stepmap, dp + ds.xy * sc);
 		} else
 		if (1.0 - ds.z * (sc + w) > t.r) {
 			ss *= 0.5f;
 			sc += ss;
+			t=texture(stepmap, dp + ds.xy * sc);
 		} else {
 			// return the vector length needed to hit the height-map
 			break;
@@ -217,7 +219,7 @@ void main(void) {
 // }
 //
 // // pretty fast version
-// // (and you can do LOD by changing "conesteps" based on size/distance, etc.)
+// // (and you can do LOD by changing "steps" based on size/distance, etc.)
 // float intersect_cone_loop(in vec2 dp, in vec3 ds)
 // {
 // 	// the "not Z" component of the direction vector
@@ -238,9 +240,9 @@ void main(void) {
 // 	// I'm using heightmaps)
 //
 // 	// adaptive (same speed as it averages the same # steps)
-// 	//for (int i = int(float(conesteps)*(0.5+iz)); i > 0; --i)
+// 	//for (int i = int(float(steps)*(0.5+iz)); i > 0; --i)
 // 	// fixed
-// 	for (int i = conesteps; i > 0; --i)
+// 	for (int i = steps; i > 0; --i)
 // 	{
 // 		// find the new location and height
 // 		t=texture(stepmap,dp+ds.xy*sc);

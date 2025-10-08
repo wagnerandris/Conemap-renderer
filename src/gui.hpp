@@ -113,10 +113,11 @@ class Gui {
 	TextureResourceSelect cone_maps;
 	TextureResourceSelect textures;
 	float &depth;
+	int &steps;
 	int &display_mode;
 
 public:
-	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &display_mode_,
+	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &steps_, int &display_mode_,
 			std::vector<std::string> &input_cone_maps,
 			std::vector<std::string> &input_textures) :
 				cone_maps(TextureResourceSelect(
@@ -130,6 +131,7 @@ public:
 								return load_texture_from_file(path.c_str());
 							})),
 				depth(depth_),
+				steps(steps_),
 				display_mode(display_mode_)
 	{
 		for (std::filesystem::path path : input_cone_maps) {
@@ -144,10 +146,12 @@ public:
 		if (ImGui::Begin("Textures")) {
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
-				ImGui::RadioButton("Heights", &display_mode, 1);
-				ImGui::RadioButton("Cones", &display_mode, 2);
-				ImGui::RadioButton("Normals", &display_mode, 3);
-				ImGui::RadioButton("Color texture", &display_mode, 0);
+			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
+
+			ImGui::RadioButton("Heights", &display_mode, 1);
+			ImGui::RadioButton("Cones", &display_mode, 2);
+			ImGui::RadioButton("Normals", &display_mode, 3);
+			ImGui::RadioButton("Color texture", &display_mode, 0);
 			ImGui::BeginDisabled(display_mode);
 				textures.file_combo();
 			ImGui::EndDisabled();

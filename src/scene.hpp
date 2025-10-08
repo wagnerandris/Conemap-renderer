@@ -28,6 +28,7 @@ public:
 	GLuint texmapTexID;
 
 	float depth = 0.25f;
+	int steps = 8;
 	
 	// rendering
 	void render();
