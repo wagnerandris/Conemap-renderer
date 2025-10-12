@@ -54,6 +54,7 @@ float intersect_relaxed_cone_exact(vec2 dp, vec3 ds, ivec2 texsize)
 	}
 	// back off one step
 	sc -= w;
+	t=texture(stepmap, dp + ds.xy * sc);
 
 	// binary search
 	for (int i = steps; i > 0; --i) {

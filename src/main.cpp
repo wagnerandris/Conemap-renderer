@@ -9,7 +9,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include <iostream>
+#include <queue>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -168,14 +168,19 @@ int main(int argc, char *argv[]) {
 	/* Create gui */
 	gui = new Gui(scene->stepmapTexID, scene->texmapTexID, scene->depth, scene->steps, scene->display_mode, cone_maps, textures);
 
-	static double elapsed_time = glfwGetTime();
+	static std::queue<double> frame_times;
+	frame_times.push(glfwGetTime());
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window)) {
-		// calculate elapsed time
+		// calculate delta time
 		double now = glfwGetTime();
-		double delta_time = now - elapsed_time;
-		elapsed_time = now;
+		double delta_time = now - frame_times.back();
+		
+		// calculate FPS
+		while (frame_times.front() < now - 1) frame_times.pop(); // remove frame times outsied 1 sec window
+		frame_times.push(now); // add new time
+		double fps = frame_times.size() / (frame_times.back() - frame_times.front());
 
 		/* Poll for and process events */
 
@@ -193,7 +198,7 @@ int main(int argc, char *argv[]) {
 
 		ImGui::NewFrame();
 		/* Compose ImGui */
-		gui->compose();
+		gui->compose(fps);
 		ImGui::ShowDemoWindow(); // TODO delete
 		ImGui::Render();
 

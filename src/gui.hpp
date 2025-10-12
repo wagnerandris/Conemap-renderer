@@ -142,7 +142,7 @@ public:
 		}
 	}
 
-	void compose() {
+	void compose(double fps) {
 		if (ImGui::Begin("Textures")) {
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
@@ -155,6 +155,10 @@ public:
 			ImGui::BeginDisabled(display_mode);
 				textures.file_combo();
 			ImGui::EndDisabled();
+		}
+		ImGui::End();
+		if (ImGui::Begin("FPS")) {
+			ImGui::LabelText("", "%f", fps);
 		}
 		ImGui::End();
 	}

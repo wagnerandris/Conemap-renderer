@@ -72,8 +72,6 @@ void Scene::create_scene_objects() {
 	quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
 }
 
-// TODO camera init
-// TODO change ratio when window changes
 Scene::Scene() : camera(Camera(glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 16.0f/9.0f)), controls(Controls(camera)) {
 	create_shaders();
 	create_scene_objects();
@@ -140,5 +138,3 @@ void Scene::render() {
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
-
-// TODO to window change callback
