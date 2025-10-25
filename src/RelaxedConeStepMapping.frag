@@ -14,57 +14,6 @@ in vec3 eyeSpaceNormal;
 uniform sampler2D stepmap; // (height, cone half-angle tangent, df/dx, df/dy)
 uniform sampler2D texmap;
 
-vec2 intersect_relaxed_cone_exact(vec3 dir, ivec2 texsize)
-{	
-	// minimum feature size parameter
-	float mfs = 1.0f / max(texsize.x, texsize.y);
-
-	// horizontal length of the normalized view vector dir
-	float hl = sqrt(1.0f - dir.z * dir.z);
-
-	// distance along vector dir
-	float dist = 0.0f;
-
-	// step size
-	float ss;
-
-	// texture at starting coordinates
-	vec4 t = texture(stepmap, texCoord);
-
-	// Cone stepping
-	while (1.0f - dir.z * dist > t.r) // while above the surface
-	{
-		// set step size (see documentation)
-		ss = (1.0f - dir.z * dist - t.r) / (dir.z + hl / (t.g * t.g))
-					+ mfs; // at least mfs
-
-		// increase distance by step size
-		dist += ss;
-
-		// find the new location and height
-		t=texture(stepmap, texCoord + dir.xy * dist);
-	}
-
-	// binary search (with mfs accuracy)
-	for (int i = steps; i > 0; --i) {
-		// if not within mfs, take half the previous step size in the right direction
-		if (1.0f - dir.z * (dist - mfs) < t.r) {
-			ss *= 0.5f;
-			dist -= ss;
-			t = texture(stepmap, texCoord + dir.xy * dist);
-		} else
-		if (1.0f - dir.z * (dist + mfs) > t.r) {
-			ss *= 0.5f;
-			dist += ss;
-			t = texture(stepmap, texCoord + dir.xy * dist);
-		} else {
-			// return the vector length needed to hit the height-map
-			break;
-		}
-	}
-	return texCoord + dir.xy * dist;
-}
-
 void main(void) {
 	ivec2 texsize = textureSize(stepmap, 0);
 
@@ -89,6 +38,7 @@ void main(void) {
 	// texture at starting coordinates
 	vec4 t = texture(stepmap, texCoord);
 
+
 // Cone stepping
 	while (1.0f - dir.z * dist > t.r) // while above the surface
 	{
@@ -103,6 +53,7 @@ void main(void) {
 	}
 
 	bool converged = 1.0f - dir.z * (dist - mfs) > t.r; // for if steps == 0
+
 
 // Binary search (with mfs accuracy)
 	for (int i = steps; i > 0; --i) {
@@ -122,7 +73,9 @@ void main(void) {
 			break;
 		}
 	}
+
 	vec2 uv = texCoord + dir.xy * dist;
+
 
 // Output color
 	if (show_convergence && !converged) {
