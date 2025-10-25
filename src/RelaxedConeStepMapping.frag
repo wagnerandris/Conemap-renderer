@@ -8,7 +8,7 @@ uniform bool show_convergence;
 in vec2 texCoord;
 in vec3 eyeSpaceVert;
 in vec3 eyeSpaceTangent;
-in vec3 eyeSpaceBinormal;
+in vec3 eyeSpaceBitangent;
 in vec3 eyeSpaceNormal;
 
 uniform sampler2D stepmap; // (height, cone half-angle tangent, df/dx, df/dy)
@@ -21,7 +21,7 @@ void main(void) {
 	vec3 eyeSpaceDir = normalize(eyeSpaceVert);
 	vec3 dir = normalize(vec3(
 				dot(eyeSpaceDir, eyeSpaceTangent),
-				dot(eyeSpaceDir, eyeSpaceBinormal),
+				dot(eyeSpaceDir, eyeSpaceBitangent),
 				dot(eyeSpaceDir, -eyeSpaceNormal) / depth // larger depth <-> smaller steps downward
 				));
 

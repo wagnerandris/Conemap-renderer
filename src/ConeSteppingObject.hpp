@@ -10,13 +10,9 @@
 // STD
 #include <vector>
 
-
 // vertex structure
-struct ConeSteppingVertex {
+struct PosUVVertex {
 	glm::vec3 pos;
-	glm::vec3 normal;
-	glm::vec3 tangent;
-	glm::vec3 binormal;
 	glm::vec2 uv;
 };
 
@@ -27,7 +23,7 @@ struct ConeSteppingObject {
 	const GLuint& stepmapTex;
 	const GLuint& texmapTex;
 
-	ConeSteppingObject(const std::vector<ConeSteppingVertex> vertices, const GLuint& stepmapTex, const GLuint& texmapTex);
+	ConeSteppingObject(const std::vector<PosUVVertex> vertices, const GLuint& stepmapTex, const GLuint& texmapTex);
 	~ConeSteppingObject();
 };
 

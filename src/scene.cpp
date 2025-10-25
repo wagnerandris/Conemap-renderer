@@ -58,16 +58,15 @@ void Scene::create_shaders() {
 void Scene::create_scene_objects() {
 	// quad
 	// setup vertices
-	// TODO automatically set up tangents and binormals
-	const std::vector<ConeSteppingVertex> vertices = {
-			// position						 normal		 tangent		binormal	 uv
-			{{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
-			{{1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 0.0f}},
-			{{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
+	const std::vector<PosUVVertex> vertices = {
+			// position						 UV
+			{{-1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+			{{1.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+			{{1.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},
 
-			{{1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {1.0f, 1.0f}},
-			{{-1.0f, 0.0f, -1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 1.0f}},
-			{{-1.0f, 0.0f, 1.0f}, {0, 1, 0}, {1, 0, 0}, {0, 0, -1}, {0.0f, 0.0f}},
+			{{1.0f, 0.0f, -1.0f}, {1.0f, 1.0f}},
+			{{-1.0f, 0.0f, -1.0f}, {0.0f, 1.0f}},
+			{{-1.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
 	};
 
 	quad = new ConeSteppingObject(vertices, stepmapTexID, texmapTexID);
