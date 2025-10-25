@@ -1,5 +1,6 @@
 // GLEW
 #include <GL/glew.h>
+#include <GL/gl.h>
 
 // GLM
 #include <glm/ext/matrix_transform.hpp>
@@ -110,6 +111,7 @@ void Scene::render() {
 	GLuint depthLoc = glGetUniformLocation(program, "depth");
 	GLuint stepsLoc = glGetUniformLocation(program, "steps");
 	GLuint display_modeLoc = glGetUniformLocation(program, "display_mode");
+	GLboolean show_convergenceLoc = glGetUniformLocation(program, "show_convergence");
 	GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
 	GLuint texmapLoc = glGetUniformLocation(program, "texmap");
 
@@ -117,6 +119,7 @@ void Scene::render() {
 	glUniform1f(depthLoc, depth);
 	glUniform1i(stepsLoc, steps);
 	glUniform1i(display_modeLoc, display_mode);
+	glUniform1i(show_convergenceLoc, show_convergence);
 
 	// quad
 	// bind textures

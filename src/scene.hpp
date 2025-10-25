@@ -27,13 +27,14 @@ public:
 	GLuint stepmapTexID;
 	GLuint texmapTexID;
 
-	float depth = 0.25f;
-	int steps = 8;
-	
 	// rendering
 	void render();
 	
+	// settings
+	float depth = 0.25f;
+	int steps = 8;
 	int display_mode = 1;
+	bool show_convergence = true;
 
 	// controls
 	Controls controls;

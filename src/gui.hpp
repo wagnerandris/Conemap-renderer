@@ -115,9 +115,10 @@ class Gui {
 	float &depth;
 	int &steps;
 	int &display_mode;
+	bool &show_convergence;
 
 public:
-	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &steps_, int &display_mode_,
+	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &steps_, int &display_mode_, bool &show_convergence_,
 			std::vector<std::string> &input_cone_maps,
 			std::vector<std::string> &input_textures) :
 				cone_maps(TextureResourceSelect(
@@ -132,7 +133,8 @@ public:
 							})),
 				depth(depth_),
 				steps(steps_),
-				display_mode(display_mode_)
+				display_mode(display_mode_),
+				show_convergence(show_convergence_)
 	{
 		for (std::filesystem::path path : input_cone_maps) {
 			cone_maps.load_file(path);
@@ -147,6 +149,8 @@ public:
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
+
+			ImGui::Checkbox("Show convergence", &show_convergence);
 
 			ImGui::RadioButton("Heights", &display_mode, 1);
 			ImGui::RadioButton("Cones", &display_mode, 2);
