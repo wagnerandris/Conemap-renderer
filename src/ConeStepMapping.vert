@@ -13,13 +13,10 @@ out vec3 eyeSpaceVert;
 out vec3 eyeSpaceTangent;
 out vec3 eyeSpaceBinormal;
 out vec3 eyeSpaceNormal;
-out vec3 eyeSpaceLight;
 
 // uniforms
 uniform mat4 worldViewMatrix;
 uniform mat4 projectionMatrix;
-
-uniform vec3 inEyeSpaceLight;
 
 void main()
 {
@@ -37,9 +34,6 @@ void main()
 		eyeSpaceNormal	 = normalize(normalMatrix * inNormal);
 		eyeSpaceTangent	 = normalize(normalMatrix * inTangent);
 		eyeSpaceBinormal = normalize(normalMatrix * inBinormal);
-
-		// pass through light coords
-		eyeSpaceLight = inEyeSpaceLight;
 
 		// final clip-space position
 		gl_Position = projectionMatrix * viewPos;
