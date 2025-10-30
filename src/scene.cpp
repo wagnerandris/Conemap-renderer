@@ -25,7 +25,7 @@ void Scene::create_shaders() {
 
 	// stages
 	const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	load_shader_from_file(vertex_shader, "ConeStepMapping.vert");
+	load_shader_from_file("ConeStepMapping.vert", vertex_shader);
 	glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 			glGetShaderInfoLog(vertex_shader, 512, NULL, infoLog);
@@ -33,7 +33,7 @@ void Scene::create_shaders() {
 	}
 
 	const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	load_shader_from_file(fragment_shader, "RelaxedConeStepMapping.frag");
+	load_shader_from_file("RelaxedConeStepMapping.frag", fragment_shader);
 
 	glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {

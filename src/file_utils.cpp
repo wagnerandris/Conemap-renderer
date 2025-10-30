@@ -14,14 +14,23 @@
 #include "file_utils.hpp"
 
 std::string read_text_file(const std::filesystem::path &path) {
+	if(!std::filesystem::is_regular_file(path)) {
+		std::fprintf(stderr, "Error: %s is not a file.\n", path.c_str());
+		return "";
+	}
+
 	// open file and seek to the end
 	std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);
-	if (!file.is_open())
+	if (!file.is_open()) {
 		fprintf(stderr, "Error: Could not open %s\n", path.c_str());
+		return "";
+	}
 
 	std::ifstream::pos_type bytesize = file.tellg();
-	if (bytesize == std::ifstream::pos_type(-1))
+	if (bytesize == std::ifstream::pos_type(-1)) {
 		fprintf(stderr, "Error: Could not read %s\n", path.c_str());
+		return "";
+	}
 
 	file.seekg(0, std::ios::beg); // reset cursor to beginning
 
@@ -31,8 +40,7 @@ std::string read_text_file(const std::filesystem::path &path) {
 	return std::string(bytes.data(), bytesize);
 }
 
-void load_shader_from_file(const GLuint shader,
-																	const std::filesystem::path &path) {
+void load_shader_from_file(const std::filesystem::path &path, const GLuint shader) {
 	const std::string shader_string = read_text_file(path);
 	const char *shader_text = shader_string.data();
 	const GLint shader_length = shader_string.length();
@@ -40,13 +48,18 @@ void load_shader_from_file(const GLuint shader,
 	glCompileShader(shader);
 }
 
-GLuint load_texture_from_file(const char *filepath) {
+GLuint load_texture_from_file(const std::filesystem::path &path) {
+	if(!std::filesystem::is_regular_file(path)) {
+		std::fprintf(stderr, "Error: %s is not a file.\n", path.c_str());
+		return 0;
+	}
+
 	stbi_set_flip_vertically_on_load(true); // OpenGL expects 0.0 at bottom
 
 	int width, height, channels;
-	unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 	if (!data) {
-		std::fprintf(stderr, "Could not load texture from %s.\n", filepath);
+		std::fprintf(stderr, "Error: Could not load texture from %s.\n", path.c_str());
 		return 0;
 	}
 	
@@ -58,7 +71,6 @@ GLuint load_texture_from_file(const char *filepath) {
 
 	glTextureParameteri(textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteri(textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTextureParameteri(textureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTextureParameteri(textureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 

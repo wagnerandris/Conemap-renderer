@@ -4,6 +4,7 @@
 // STD
 #include <algorithm>
 #include <filesystem>
+#include <string>
 
 // ImGui
 #include <imgui.h>
@@ -19,16 +20,17 @@ struct TextureResource {
 
 struct TextureResourceSelect {
 	std::string label;
+	std::string error = "";
 
 	std::vector<TextureResource> resources;
 	unsigned int selected_index = 0;
 	GLuint &selected_id;
-	GLuint (*load_func)(std::filesystem::path);
+	GLuint (*load_func)(std::filesystem::path&);
 
 	ImGui::FileBrowser fileDialog;
 
 	TextureResourceSelect(std::string label_, GLuint &selected_id_,
-												GLuint (*load_func_)(std::filesystem::path))
+												GLuint (*load_func_)(std::filesystem::path&))
 			: label(label_), selected_id(selected_id_), load_func(load_func_) {}
 
 	~TextureResourceSelect() {
@@ -43,20 +45,28 @@ struct TextureResourceSelect {
 														 return std::filesystem::equivalent(res.path, path);
 													 });
 
-		if (it == resources.end()) {
-			GLuint id = load_func(path);
-			if (id) {
-				resources.push_back(TextureResource{path, path.filename(), id});
-				selected_index = resources.size() - 1;
-				selected_id = resources[selected_index].id;
-			}
+		if (it != resources.end()) {
+			error = "Already loaded.";
+			return;
 		}
+
+		GLuint id = load_func(path);
+		
+		if(!id) {
+			error = "Could not load.";
+			return;
+		}
+
+		resources.push_back(TextureResource{path, path.filename(), id});
+		selected_index = resources.size() - 1;
+		selected_id = resources[selected_index].id;
+		error = ""; // remove error message after succesfully loading an image
 	}
 
 	void file_combo() {
 		const char *combo_preview_value =
-				selected_index < resources.size()
-						? resources[selected_index].name.c_str()
+				selected_index < resources.size() // if there is a selected resource
+						? resources[selected_index].name.c_str() // display its name
 						: "";
 
 		if (ImGui::BeginCombo(label.c_str(), combo_preview_value)) {
@@ -71,11 +81,13 @@ struct TextureResourceSelect {
 			for (size_t i = 0; i < resources.size(); i++) {
 				const bool is_selected = (selected_index == i);
 
-				if (filter.PassFilter(resources[i].name.c_str())) {
-					ImGui::PushID(resources[i].id);
+				if (filter.PassFilter(resources[i].name.c_str())) { // only display names that match the filer string
+					ImGui::PushID(resources[i].id); // needed for resources with the same name
 					if (ImGui::Selectable(resources[i].name.c_str(), is_selected)) {
+						// set selected
 						selected_index = i;
 						selected_id = resources[selected_index].id;
+						error = ""; // remove error when selecting new texture
 					}
 					ImGui::PopID();
 				}
@@ -103,9 +115,10 @@ struct TextureResourceSelect {
 			fileDialog.ClearSelected();
 
 			load_file(path);
-
-			// TODO popup error messages?
 		}
+
+		ImGui::TextColored(ImVec4(1, 0, 0, 1), // red
+											"%s", error.c_str());
 	}
 };
 
@@ -123,19 +136,20 @@ public:
 			std::vector<std::string> &input_textures) :
 				cone_maps(TextureResourceSelect(
 							"Cone map", cone_map_id,
-							[](std::filesystem::path path) {
-								return load_texture_from_file(path.c_str());
+							[](std::filesystem::path &path) {
+								return load_texture_from_file(path);
 							})),
 				textures(TextureResourceSelect(
 							"Texture", texture_id,
-							[](std::filesystem::path path) {
-								return load_texture_from_file(path.c_str());
+							[](std::filesystem::path &path) {
+								return load_texture_from_file(path);
 							})),
 				depth(depth_),
 				steps(steps_),
 				display_mode(display_mode_),
 				show_convergence(show_convergence_)
 	{
+		// load conemaps and textures passed as arguments
 		for (std::filesystem::path path : input_cone_maps) {
 			cone_maps.load_file(path);
 		}
@@ -156,11 +170,12 @@ public:
 			ImGui::RadioButton("Cones", &display_mode, 2);
 			ImGui::RadioButton("Normals", &display_mode, 3);
 			ImGui::RadioButton("Color texture", &display_mode, 0);
-			ImGui::BeginDisabled(display_mode);
-				textures.file_combo();
-			ImGui::EndDisabled();
+				ImGui::BeginDisabled(display_mode);
+					textures.file_combo(); // only active in Color texture display mode
+				ImGui::EndDisabled();
 		}
 		ImGui::End();
+
 		if (ImGui::Begin("FPS")) {
 			ImGui::LabelText("", "%f", fps);
 		}
@@ -168,5 +183,4 @@ public:
 	}
 };
 
-// TODO show_convergence
 #endif

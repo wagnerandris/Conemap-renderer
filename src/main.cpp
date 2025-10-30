@@ -40,7 +40,6 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action,
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-	// TODO keybinds
 	if (!keyboard_to_imgui) {
 		scene->controls.keyboard_action(key, scancode, action, mods);
 	}
@@ -137,7 +136,7 @@ int main(int argc, char *argv[]) {
 	/* Start GLEW */
 	GLenum error = glewInit();
 	if (error != GLEW_OK) {
-		fprintf(stderr, "Error during the initialization of glew.");
+		fprintf(stderr, "Error: Failure during GLEW initialization.");
 		return -1;
 	}
 
