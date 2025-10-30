@@ -25,13 +25,11 @@ struct TextureResourceSelect {
 	std::vector<TextureResource> resources;
 	unsigned int selected_index = 0;
 	GLuint &selected_id;
-	GLuint (*load_func)(std::filesystem::path&);
 
 	ImGui::FileBrowser fileDialog;
 
-	TextureResourceSelect(std::string label_, GLuint &selected_id_,
-												GLuint (*load_func_)(std::filesystem::path&))
-			: label(label_), selected_id(selected_id_), load_func(load_func_) {}
+	TextureResourceSelect(std::string label_, GLuint &selected_id_)
+			: label(label_), selected_id(selected_id_) {}
 
 	~TextureResourceSelect() {
 		for (auto res : resources) {
@@ -50,7 +48,7 @@ struct TextureResourceSelect {
 			return;
 		}
 
-		GLuint id = load_func(path);
+		GLuint id = load_texture_from_file(path);
 		
 		if(!id) {
 			error = "Could not load.";
@@ -134,16 +132,8 @@ public:
 	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &steps_, int &display_mode_, bool &show_convergence_,
 			std::vector<std::string> &input_cone_maps,
 			std::vector<std::string> &input_textures) :
-				cone_maps(TextureResourceSelect(
-							"Cone map", cone_map_id,
-							[](std::filesystem::path &path) {
-								return load_texture_from_file(path);
-							})),
-				textures(TextureResourceSelect(
-							"Texture", texture_id,
-							[](std::filesystem::path &path) {
-								return load_texture_from_file(path);
-							})),
+				cone_maps(TextureResourceSelect("Cone map", cone_map_id)),
+				textures(TextureResourceSelect("Texture", texture_id)),
 				depth(depth_),
 				steps(steps_),
 				display_mode(display_mode_),
