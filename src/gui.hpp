@@ -11,6 +11,7 @@
 #include <external/imgui-filebrowser/imfilebrowser.h>
 
 #include "file_utils.hpp"
+#include "ConeSteppingObject.hpp"
 
 struct TextureResource {
 	std::filesystem::path path;
@@ -121,23 +122,29 @@ struct TextureResourceSelect {
 };
 
 class Gui {
-	TextureResourceSelect cone_maps;
-	TextureResourceSelect textures;
-	float &depth;
+	// rendering settings
 	int &steps;
 	int &display_mode;
 	bool &show_convergence;
 
+	// object settings
+	ConeSteppingObject &object;
+	TextureResourceSelect cone_maps;
+	TextureResourceSelect textures;
+	float &depth;
+
 public:
-	Gui(GLuint &cone_map_id, GLuint &texture_id, float &depth_, int &steps_, int &display_mode_, bool &show_convergence_,
+	Gui(int &steps_, int &display_mode_, bool &show_convergence_,
+			ConeSteppingObject &object_, 
 			std::vector<std::string> &input_cone_maps,
 			std::vector<std::string> &input_textures) :
-				cone_maps(TextureResourceSelect("Cone map", cone_map_id)),
-				textures(TextureResourceSelect("Texture", texture_id)),
-				depth(depth_),
 				steps(steps_),
 				display_mode(display_mode_),
-				show_convergence(show_convergence_)
+				show_convergence(show_convergence_),
+				object(object_),
+				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex)),
+				textures(TextureResourceSelect("Texture", object.texmapTex)),
+				depth(object.depth)
 	{
 		// load conemaps and textures passed as arguments
 		for (std::filesystem::path path : input_cone_maps) {
@@ -149,11 +156,11 @@ public:
 	}
 
 	void compose(double fps) {
-		if (ImGui::Begin("Textures")) {
+		// Rendering
+		if (ImGui::Begin("Rendering")) {
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
-
 			ImGui::Checkbox("Show convergence", &show_convergence);
 
 			ImGui::RadioButton("Heights", &display_mode, 1);

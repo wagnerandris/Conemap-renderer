@@ -20,10 +20,11 @@ struct PosUVVertex {
 struct ConeSteppingObject {
 	GLuint vao;
 	GLuint vbo;
-	const GLuint& stepmapTex;
-	const GLuint& texmapTex;
+	GLuint stepmapTex;
+	GLuint texmapTex;
+	float depth = 0.25f;
 
-	ConeSteppingObject(const std::vector<PosUVVertex> vertices, const GLuint& stepmapTex, const GLuint& texmapTex);
+	ConeSteppingObject(const std::vector<PosUVVertex> vertices);
 	~ConeSteppingObject();
 };
 

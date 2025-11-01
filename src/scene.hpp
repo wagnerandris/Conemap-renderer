@@ -7,36 +7,28 @@
 #include "Controls.hpp"
 
 class Scene {
-
 	// program
 	GLuint program;
-	void create_shaders();
 
 	// camera
 	Camera camera;
-
-	// objects
-	ConeSteppingObject* quad;
-	void create_scene_objects();
 
 public:
 	Scene();
 	~Scene();
 	
-	// textures
-	GLuint stepmapTexID;
-	GLuint texmapTexID;
-
-	// rendering
-	void render();
+	// camera controls
+	Controls controls;
 	
-	// settings
-	float depth = 0.25f;
+	// objects
+	ConeSteppingObject quad;
+
+	// rendering settings
 	int steps = 8;
 	int display_mode = 1;
 	bool show_convergence = true;
 
-	// controls
-	Controls controls;
+	// rendering
+	void render();
 };
 #endif

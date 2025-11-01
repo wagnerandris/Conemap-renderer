@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
 	ImGui_ImplOpenGL3_Init();
 
 	/* Create gui */
-	gui = new Gui(scene->stepmapTexID, scene->texmapTexID, scene->depth, scene->steps, scene->display_mode, scene->show_convergence, cone_maps, textures);
+	gui = new Gui(scene->steps, scene->display_mode, scene->show_convergence, scene->quad, cone_maps, textures);
 
 	static std::queue<double> frame_times;
 	frame_times.push(glfwGetTime());
