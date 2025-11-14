@@ -4,7 +4,11 @@
 // STD
 #include <algorithm>
 #include <filesystem>
+#include <mutex>
+#include <optional>
+#include <queue>
 #include <string>
+#include <thread>
 
 // ImGui
 #include "external/imgui/src/imgui.h"
@@ -42,6 +46,12 @@ struct TextureResourceSelect {
 	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, const std::vector<std::filesystem::path> &paths)
 			: TextureResourceSelect(label_, selected_id_) {
 				load_files(paths);
+				
+				// select the last file loaded
+				if (!resources.empty()) {
+					selected_index = resources.size() - 1;
+					selected_id = resources[selected_index].id;
+				}
 			}
 
 	~TextureResourceSelect() {
@@ -50,9 +60,10 @@ struct TextureResourceSelect {
 		}
 	}
 
-	void load_files(const std::vector<std::filesystem::path> &paths) {
+	bool load_files(const std::vector<std::filesystem::path> &paths) {
 		error = ""; // remove error messages before attempting to load new textures
 
+		bool success = false;
 		for (std::filesystem::path path : paths) {
 			auto it = std::find_if(resources.begin(), resources.end(),
 													 	 [&path](const TextureResource &res) {
@@ -73,10 +84,10 @@ struct TextureResourceSelect {
 
 			resources.push_back(TextureResource{path, path.filename(), id});
 
-			// select the last file loaded
-			selected_index = resources.size() - 1;
-			selected_id = resources[selected_index].id;
+			success = true;
 		}
+
+		return success;
 	}
 
 	void file_combo() {
@@ -130,7 +141,11 @@ struct TextureResourceSelect {
 			std::vector<std::filesystem::path> input_files = file_selector.GetMultiSelected();
 			file_selector.ClearSelected();
 
-			load_files(input_files);
+			if (load_files(input_files)) {
+				// select the last file loaded
+				selected_index = resources.size() - 1;
+				selected_id = resources[selected_index].id;
+			}
 		}
 
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), // red
@@ -138,7 +153,40 @@ struct TextureResourceSelect {
 	}
 };
 
+
+template <typename T>
+class ThreadSafeQueue {
+	std::queue<T> q;
+	std::mutex m;
+
+public:
+	void push(T v) {
+		std::lock_guard<std::mutex> lock(m);
+		q.push(std::move(v));
+	}
+
+	std::optional<T> try_pop() {
+		std::lock_guard<std::mutex> lock(m);
+		if (q.empty()) return std::nullopt;
+		T v = std::move(q.front());
+		q.pop();
+		return v;
+	}
+
+	bool empty() {
+		std::lock_guard<std::mutex> lock(m);
+		return q.empty();
+	}
+};
+
 class ConeMapGenerator {
+	ThreadSafeQueue<std::filesystem::path> input_queue;
+	ThreadSafeQueue<std::filesystem::path> output_queue;
+
+	std::counting_semaphore<> sem{0}; // initially 0
+	std::jthread worker;
+	std::atomic<bool> processing;
+
 	std::filesystem::path output_path = std::filesystem::current_path();
 
 	ImGui::FileBrowser directory_selector = ImGui::FileBrowser(
@@ -157,6 +205,34 @@ class ConeMapGenerator {
 public:
 	ConeMapGenerator() {
 		file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"});
+		// TODO file selector names
+
+		// start worker thread
+		worker = std::jthread([this](std::stop_token stoken) {
+			while (!stoken.stop_requested()) {
+				// wait until at least one input is queued
+				sem.acquire();
+
+				// check again, in case stop was requested while waiting
+				if (stoken.stop_requested()) break;
+
+				std::optional<std::filesystem::path> input = input_queue.try_pop();
+
+				processing.store(true);
+
+				std::filesystem::path output = conemap::discrete(output_path, *input);
+
+				// Push result
+				output_queue.push(output);
+
+				processing.store(false);
+			}
+		});
+	}
+
+	~ConeMapGenerator() {
+		worker.request_stop();
+		sem.release();
 	}
 
 	std::filesystem::path compose() {
@@ -171,7 +247,9 @@ public:
 			directory_selector.ClearSelected();
 		}
 
-		if (ImGui::Button("Generate cone map")) {
+		// TODO discrete/analytic
+		// TODO wrapping texture
+		if (ImGui::Button("Generate cone map from texture")) {
 			file_selector.Open();
 		}
 
@@ -183,13 +261,20 @@ public:
 			file_selector.ClearSelected();
 
 			for (std::filesystem::path input : input_files) {
-				conemap::discrete(output_path, input);
-				conemap::analytic(output_path, input);
+				input_queue.push(input);
+				// signal that an input can be processed
+				sem.release();
 			}
-			// TODO namespace
-			// TODO generate file with correct options
 		}
-		return ""; // TODO return vector of fielpaths
+
+		std::optional<std::filesystem::path> output = output_queue.try_pop();
+
+		ImGui::TextWrapped("%s", processing.load() ? "Generating in progress" : "");
+
+		if (output) {
+			return *output;
+		}
+		return "";
 	}
 };
 
@@ -219,7 +304,7 @@ public:
 				show_convergence(show_convergence_),
 				object(object_),
 				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex, input_cone_maps)),
-				textures(TextureResourceSelect("Texture", object.texmapTex, input_cone_maps)),
+				textures(TextureResourceSelect("Texture", object.texmapTex, input_textures)),
 				depth(object.depth),
 				cone_map_generator(ConeMapGenerator()) {}
 
@@ -227,9 +312,9 @@ public:
 		// Rendering
 		if (ImGui::Begin("Rendering")) {
 			std::filesystem::path new_cone_map = cone_map_generator.compose();
-			// if (!new_cone_map.empty()) {
-			// 	cone_maps.load_files(new_cone_maps);
-			// }
+			if (!new_cone_map.empty()) {
+				cone_maps.load_files({new_cone_map});
+			}
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);

@@ -1,4 +1,4 @@
-project('Conemap renderer', 'cpp')
+project('Conemap renderer', 'cpp', default_options: ['cpp_std=c++20'])
 
 # deps
 gl_dep = dependency('GL')
