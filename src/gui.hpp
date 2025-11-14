@@ -7,8 +7,8 @@
 #include <string>
 
 // ImGui
-#include <imgui.h>
-#include <external/imgui-filebrowser/imfilebrowser.h>
+#include "external/imgui/src/imgui.h"
+#include "external/imgui-filebrowser/imfilebrowser.h"
 
 #include "file_utils.hpp"
 #include "ConeSteppingObject.hpp"
@@ -121,6 +121,12 @@ struct TextureResourceSelect {
 	}
 };
 
+class ConeMapGenerator {
+public:
+	// TODO return path
+	void compose() {}
+};
+
 class Gui {
 	// rendering settings
 	int &steps;
@@ -133,6 +139,9 @@ class Gui {
 	TextureResourceSelect textures;
 	float &depth;
 
+	// cone map generation
+	ConeMapGenerator cone_map_generator;
+
 public:
 	Gui(int &steps_, int &display_mode_, bool &show_convergence_,
 			ConeSteppingObject &object_, 
@@ -144,7 +153,8 @@ public:
 				object(object_),
 				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex)),
 				textures(TextureResourceSelect("Texture", object.texmapTex)),
-				depth(object.depth)
+				depth(object.depth),
+				cone_map_generator(ConeMapGenerator())
 	{
 		// load conemaps and textures passed as arguments
 		for (std::filesystem::path path : input_cone_maps) {
@@ -158,6 +168,9 @@ public:
 	void compose(double fps) {
 		// Rendering
 		if (ImGui::Begin("Rendering")) {
+			cone_map_generator.compose();
+			// TODO take returned string, call cone_maps.load_file on it
+
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);

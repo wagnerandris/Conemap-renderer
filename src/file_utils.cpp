@@ -8,8 +8,10 @@
 #include <GL/glew.h>
 
 // stb
+#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
+#endif
+#include "external/stb/stb_image.h"
 
 #include "file_utils.hpp"
 
