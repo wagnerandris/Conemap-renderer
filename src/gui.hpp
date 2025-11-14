@@ -13,6 +13,9 @@
 #include "file_utils.hpp"
 #include "ConeSteppingObject.hpp"
 
+// Cone map generation
+#include "subprojects/Conemap/src/conemap.hpp"
+
 struct TextureResource {
 	std::filesystem::path path;
 	std::string name;
@@ -27,10 +30,19 @@ struct TextureResourceSelect {
 	unsigned int selected_index = 0;
 	GLuint &selected_id;
 
-	ImGui::FileBrowser fileDialog;
+	ImGui::FileBrowser file_selector = ImGui::FileBrowser(
+			ImGuiFileBrowserFlags_MultipleSelection |
+			ImGuiFileBrowserFlags_ConfirmOnEnter |
+			ImGuiFileBrowserFlags_EditPathString
+			);
 
-	TextureResourceSelect(std::string label_, GLuint &selected_id_)
+	TextureResourceSelect(const std::string &label_, GLuint &selected_id_)
 			: label(label_), selected_id(selected_id_) {}
+
+	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, const std::vector<std::filesystem::path> &paths)
+			: TextureResourceSelect(label_, selected_id_) {
+				load_files(paths);
+			}
 
 	~TextureResourceSelect() {
 		for (auto res : resources) {
@@ -38,28 +50,33 @@ struct TextureResourceSelect {
 		}
 	}
 
-	void load_file(std::filesystem::path path) {
-		auto it = std::find_if(resources.begin(), resources.end(),
-													 [&path](const TextureResource &res) {
-														 return std::filesystem::equivalent(res.path, path);
-													 });
+	void load_files(const std::vector<std::filesystem::path> &paths) {
+		error = ""; // remove error messages before attempting to load new textures
 
-		if (it != resources.end()) {
-			error = "Already loaded.";
-			return;
+		for (std::filesystem::path path : paths) {
+			auto it = std::find_if(resources.begin(), resources.end(),
+													 	 [&path](const TextureResource &res) {
+														 	 return std::filesystem::equivalent(res.path, path);
+													 	 });
+
+			if (it != resources.end()) {
+				error += path.string() + " is already loaded.\n";
+				continue;
+			}
+
+			GLuint id = load_texture_from_file(path);
+			
+			if(!id) {
+				error += path.string() + " could not be loaded.\n";
+				continue;
+			}
+
+			resources.push_back(TextureResource{path, path.filename(), id});
+
+			// select the last file loaded
+			selected_index = resources.size() - 1;
+			selected_id = resources[selected_index].id;
 		}
-
-		GLuint id = load_texture_from_file(path);
-		
-		if(!id) {
-			error = "Could not load.";
-			return;
-		}
-
-		resources.push_back(TextureResource{path, path.filename(), id});
-		selected_index = resources.size() - 1;
-		selected_id = resources[selected_index].id;
-		error = ""; // remove error message after succesfully loading an image
 	}
 
 	void file_combo() {
@@ -103,17 +120,17 @@ struct TextureResourceSelect {
 
 		ImGui::PushID(&label); // needed for multiple buttons with the same label
 		if (ImGui::Button("Add new")) {
-			fileDialog.Open();
+			file_selector.Open();
 		}
 		ImGui::PopID();
 
-		fileDialog.Display();
+		file_selector.Display();
 
-		if (fileDialog.HasSelected()) {
-			std::filesystem::path path = fileDialog.GetSelected();
-			fileDialog.ClearSelected();
+		if (file_selector.HasSelected()) {
+			std::vector<std::filesystem::path> input_files = file_selector.GetMultiSelected();
+			file_selector.ClearSelected();
 
-			load_file(path);
+			load_files(input_files);
 		}
 
 		ImGui::TextColored(ImVec4(1, 0, 0, 1), // red
@@ -122,11 +139,61 @@ struct TextureResourceSelect {
 };
 
 class ConeMapGenerator {
+	std::filesystem::path output_path = std::filesystem::current_path();
+
+	ImGui::FileBrowser directory_selector = ImGui::FileBrowser(
+			ImGuiFileBrowserFlags_SelectDirectory |
+			ImGuiFileBrowserFlags_HideRegularFiles |
+			ImGuiFileBrowserFlags_ConfirmOnEnter |
+			ImGuiFileBrowserFlags_EditPathString
+			);
+
+	ImGui::FileBrowser file_selector = ImGui::FileBrowser(
+			ImGuiFileBrowserFlags_MultipleSelection |
+			ImGuiFileBrowserFlags_ConfirmOnEnter |
+			ImGuiFileBrowserFlags_EditPathString
+			);
+
 public:
-	// TODO return path
-	void compose() {}
+	ConeMapGenerator() {
+		file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"});
+	}
+
+	std::filesystem::path compose() {
+		ImGui::TextWrapped("Cone map generation output directory:\n%s", output_path.c_str());
+		if (ImGui::Button("Change")) {
+			directory_selector.Open();
+		}
+		directory_selector.Display();
+		
+		if (directory_selector.HasSelected()) {
+			output_path = directory_selector.GetSelected();
+			directory_selector.ClearSelected();
+		}
+
+		if (ImGui::Button("Generate cone map")) {
+			file_selector.Open();
+		}
+
+		file_selector.Display();
+
+		std::vector<std::filesystem::path> input_files;
+		if (file_selector.HasSelected()) {
+			input_files = file_selector.GetMultiSelected();
+			file_selector.ClearSelected();
+
+			for (std::filesystem::path input : input_files) {
+				conemap::discrete(output_path, input);
+				conemap::analytic(output_path, input);
+			}
+			// TODO namespace
+			// TODO generate file with correct options
+		}
+		return ""; // TODO return vector of fielpaths
+	}
 };
 
+// TODO give titles to file dialogue windows
 class Gui {
 	// rendering settings
 	int &steps;
@@ -145,32 +212,24 @@ class Gui {
 public:
 	Gui(int &steps_, int &display_mode_, bool &show_convergence_,
 			ConeSteppingObject &object_, 
-			std::vector<std::string> &input_cone_maps,
-			std::vector<std::string> &input_textures) :
+			std::vector<std::filesystem::path> &input_cone_maps,
+			std::vector<std::filesystem::path> &input_textures) :
 				steps(steps_),
 				display_mode(display_mode_),
 				show_convergence(show_convergence_),
 				object(object_),
-				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex)),
-				textures(TextureResourceSelect("Texture", object.texmapTex)),
+				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex, input_cone_maps)),
+				textures(TextureResourceSelect("Texture", object.texmapTex, input_cone_maps)),
 				depth(object.depth),
-				cone_map_generator(ConeMapGenerator())
-	{
-		// load conemaps and textures passed as arguments
-		for (std::filesystem::path path : input_cone_maps) {
-			cone_maps.load_file(path);
-		}
-		for (std::filesystem::path path : input_textures) {
-			textures.load_file(path);
-		}
-	}
+				cone_map_generator(ConeMapGenerator()) {}
 
 	void compose(double fps) {
 		// Rendering
 		if (ImGui::Begin("Rendering")) {
-			cone_map_generator.compose();
-			// TODO take returned string, call cone_maps.load_file on it
-
+			std::filesystem::path new_cone_map = cone_map_generator.compose();
+			// if (!new_cone_map.empty()) {
+			// 	cone_maps.load_files(new_cone_maps);
+			// }
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);

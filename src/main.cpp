@@ -80,35 +80,38 @@ static void framebuffer_size_callback(GLFWwindow *window, int width,
 	scene->controls.set_aspect(width / (float)height);
 }
 
+
 int main(int argc, char *argv[]) {
 	/* Parse command line arguments */
-	std::vector<std::string> cone_maps;
-	std::vector<std::string> textures;
+	std::vector<std::filesystem::path> cone_maps;
+	std::vector<std::filesystem::path> textures;
 
 	// Define long options
 	const struct option long_options[] = {
-			{"cone-maps", required_argument, nullptr, 'c'},
-			{"textures", required_argument, nullptr, 't'},
-			{nullptr, 0, nullptr, 0}};
+		{"cone-maps", required_argument, nullptr, 'c'},
+		{"textures", required_argument, nullptr, 't'},
+		{nullptr, 0, nullptr, 0}
+	};
 
 	int opt;
 	int option_index = 0;
 
-	while ((opt = getopt_long(argc, argv, "c:t:", long_options, &option_index)) !=
-				 -1) {
+	// Parse arguments
+	while ((opt = getopt_long(argc, argv, "c:t:", long_options, &option_index)) != -1) {
 		switch (opt) {
 		case 'c':
-			cone_maps.push_back(optarg);
+			cone_maps.emplace_back(optarg);
 			// Collect all non-option arguments after -c or --cone-maps
 			while (optind < argc && argv[optind][0] != '-') {
-				cone_maps.push_back(argv[optind++]);
+				cone_maps.emplace_back(argv[optind++]);
 			}
 			break;
+
 		case 't':
-			textures.push_back(optarg);
+			textures.emplace_back(optarg);
 			// Collect all non-option arguments after -t or --textures
 			while (optind < argc && argv[optind][0] != '-') {
-				textures.push_back(argv[optind++]);
+				textures.emplace_back(argv[optind++]);
 			}
 			break;
 		}
@@ -177,7 +180,7 @@ int main(int argc, char *argv[]) {
 		double delta_time = now - frame_times.back();
 		
 		// calculate FPS
-		while (frame_times.front() < now - 1) frame_times.pop(); // remove frame times outsied 1 sec window
+		while (frame_times.size() > 1 && frame_times.front() < now - 1) frame_times.pop(); // remove frame times outsied 1 sec window
 		frame_times.push(now); // add new time
 		double fps = frame_times.size() / (frame_times.back() - frame_times.front());
 
@@ -199,6 +202,7 @@ int main(int argc, char *argv[]) {
 		/* Compose ImGui */
 		gui->compose(fps);
 		ImGui::ShowDemoWindow(); // TODO delete
+
 		ImGui::Render();
 
 		/* Render frame */
