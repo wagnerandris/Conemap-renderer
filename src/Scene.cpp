@@ -15,8 +15,7 @@
 
 #include "ConeSteppingObject.hpp"
 #include "file_utils.hpp"
-
-#include "scene.hpp"
+#include "Scene.hpp"
 
 // quad vertices
 static const std::vector<PosUVVertex> quad_vertices = {

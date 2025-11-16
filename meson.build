@@ -17,7 +17,7 @@ fs.copyfile('src/RelaxedConeStepMapping.frag', install : true, install_dir : '.'
 
 executable('Conemap renderer',
            'src/main.cpp',
-           'src/scene.cpp',
+           'src/Scene.cpp',
            'src/ConeSteppingObject.cpp',
            'src/Camera.cpp',
            'src/Controls.cpp',

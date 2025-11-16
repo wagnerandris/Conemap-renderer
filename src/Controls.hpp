@@ -3,7 +3,6 @@
 
 #include "Camera.hpp"
 
-// TODO noexcept?
 class Controls {
 	Camera& camera;
 

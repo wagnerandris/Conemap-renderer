@@ -89,7 +89,6 @@ void Controls::mouse_move_action(double xdiff, double ydiff) {
 	if (!middle_down && right_down) {
 		camera.rotate_center(xdiff / 32.0, ydiff / 32.0);
 	}
-	// TODO separate speeds for mouse and touchpad/joystick
 }
 
 void Controls::mouse_scroll_action(double xoffset, double yoffset) {

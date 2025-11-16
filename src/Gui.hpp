@@ -4,21 +4,16 @@
 // STD
 #include <algorithm>
 #include <filesystem>
-#include <mutex>
-#include <optional>
-#include <queue>
 #include <string>
-#include <thread>
 
 // ImGui
 #include "external/imgui/src/imgui.h"
 #include "external/imgui-filebrowser/imfilebrowser.h"
 
+
 #include "file_utils.hpp"
 #include "ConeSteppingObject.hpp"
-
-// Cone map generation
-#include "subprojects/Conemap/src/conemap.hpp"
+#include "ConeMapGenerator.hpp"
 
 struct TextureResource {
 	std::filesystem::path path;
@@ -41,7 +36,9 @@ struct TextureResourceSelect {
 			);
 
 	TextureResourceSelect(const std::string &label_, GLuint &selected_id_)
-			: label(label_), selected_id(selected_id_) {}
+			: label(label_), selected_id(selected_id_) {
+				file_selector.SetTitle(label + " selection");
+			}
 
 	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, const std::vector<std::filesystem::path> &paths)
 			: TextureResourceSelect(label_, selected_id_) {
@@ -153,132 +150,6 @@ struct TextureResourceSelect {
 	}
 };
 
-
-template <typename T>
-class ThreadSafeQueue {
-	std::queue<T> q;
-	std::mutex m;
-
-public:
-	void push(T v) {
-		std::lock_guard<std::mutex> lock(m);
-		q.push(std::move(v));
-	}
-
-	std::optional<T> try_pop() {
-		std::lock_guard<std::mutex> lock(m);
-		if (q.empty()) return std::nullopt;
-		T v = std::move(q.front());
-		q.pop();
-		return v;
-	}
-
-	bool empty() {
-		std::lock_guard<std::mutex> lock(m);
-		return q.empty();
-	}
-};
-
-class ConeMapGenerator {
-	ThreadSafeQueue<std::filesystem::path> input_queue;
-	ThreadSafeQueue<std::filesystem::path> output_queue;
-
-	std::counting_semaphore<> sem{0}; // initially 0
-	std::jthread worker;
-	std::atomic<bool> processing;
-
-	std::filesystem::path output_path = std::filesystem::current_path();
-
-	ImGui::FileBrowser directory_selector = ImGui::FileBrowser(
-			ImGuiFileBrowserFlags_SelectDirectory |
-			ImGuiFileBrowserFlags_HideRegularFiles |
-			ImGuiFileBrowserFlags_ConfirmOnEnter |
-			ImGuiFileBrowserFlags_EditPathString
-			);
-
-	ImGui::FileBrowser file_selector = ImGui::FileBrowser(
-			ImGuiFileBrowserFlags_MultipleSelection |
-			ImGuiFileBrowserFlags_ConfirmOnEnter |
-			ImGuiFileBrowserFlags_EditPathString
-			);
-
-public:
-	ConeMapGenerator() {
-		file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"});
-		// TODO file selector names
-
-		// start worker thread
-		worker = std::jthread([this](std::stop_token stoken) {
-			while (!stoken.stop_requested()) {
-				// wait until at least one input is queued
-				sem.acquire();
-
-				// check again, in case stop was requested while waiting
-				if (stoken.stop_requested()) break;
-
-				std::optional<std::filesystem::path> input = input_queue.try_pop();
-
-				processing.store(true);
-
-				std::filesystem::path output = conemap::discrete(output_path, *input);
-
-				// Push result
-				output_queue.push(output);
-
-				processing.store(false);
-			}
-		});
-	}
-
-	~ConeMapGenerator() {
-		worker.request_stop();
-		sem.release();
-	}
-
-	std::filesystem::path compose() {
-		ImGui::TextWrapped("Cone map generation output directory:\n%s", output_path.c_str());
-		if (ImGui::Button("Change")) {
-			directory_selector.Open();
-		}
-		directory_selector.Display();
-		
-		if (directory_selector.HasSelected()) {
-			output_path = directory_selector.GetSelected();
-			directory_selector.ClearSelected();
-		}
-
-		// TODO discrete/analytic
-		// TODO wrapping texture
-		if (ImGui::Button("Generate cone map from texture")) {
-			file_selector.Open();
-		}
-
-		file_selector.Display();
-
-		std::vector<std::filesystem::path> input_files;
-		if (file_selector.HasSelected()) {
-			input_files = file_selector.GetMultiSelected();
-			file_selector.ClearSelected();
-
-			for (std::filesystem::path input : input_files) {
-				input_queue.push(input);
-				// signal that an input can be processed
-				sem.release();
-			}
-		}
-
-		std::optional<std::filesystem::path> output = output_queue.try_pop();
-
-		ImGui::TextWrapped("%s", processing.load() ? "Generating in progress" : "");
-
-		if (output) {
-			return *output;
-		}
-		return "";
-	}
-};
-
-// TODO give titles to file dialogue windows
 class Gui {
 	// rendering settings
 	int &steps;
@@ -309,12 +180,17 @@ public:
 				cone_map_generator(ConeMapGenerator()) {}
 
 	void compose(double fps) {
-		// Rendering
-		if (ImGui::Begin("Rendering")) {
+		// Cone map generation
+		if (ImGui::Begin("Cone map generation")) {
 			std::filesystem::path new_cone_map = cone_map_generator.compose();
 			if (!new_cone_map.empty()) {
 				cone_maps.load_files({new_cone_map});
 			}
+		}
+		ImGui::End();
+
+		// Rendering
+		if (ImGui::Begin("Rendering")) {
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
@@ -330,6 +206,7 @@ public:
 		}
 		ImGui::End();
 
+		// FPS counter
 		if (ImGui::Begin("FPS")) {
 			ImGui::LabelText("", "%f", fps);
 		}

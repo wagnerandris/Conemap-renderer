@@ -56,7 +56,6 @@ void Camera::move(glm::vec3 const& diff) {
 	view_matrix = glm::lookAt(eye, center, up);
 }
 
-// TODO gimbal lock
 void Camera::rotate_eye(float phi, float theta) {
 	glm::vec3 center_to_eye = eye - center;
 

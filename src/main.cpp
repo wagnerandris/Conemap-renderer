@@ -23,8 +23,8 @@
 #include <cstdio>
 #include <getopt.h>
 
-#include "gui.hpp"
-#include "scene.hpp"
+#include "Gui.hpp"
+#include "Scene.hpp"
 
 static Scene *scene;
 static Gui *gui;
@@ -143,8 +143,8 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	/* Set vsync */
-	glfwSwapInterval(1);
+	/* Turn off vsync to see true FPS */
+	glfwSwapInterval(0);
 
 	/* Create scene */
 	scene = new Scene();
@@ -201,7 +201,6 @@ int main(int argc, char *argv[]) {
 		ImGui::NewFrame();
 		/* Compose ImGui */
 		gui->compose(fps);
-		ImGui::ShowDemoWindow(); // TODO delete
 
 		ImGui::Render();
 
