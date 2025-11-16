@@ -40,6 +40,7 @@ public:
 
 class ConeMapGenerator {
 	int generation_mode = 0;
+	int height_mode = 0;
 
 	ThreadSafeQueue<std::pair<std::filesystem::path, int>> input_queue;
 	ThreadSafeQueue<std::filesystem::path> output_queue;
@@ -83,11 +84,14 @@ public:
 
 				processing.store(true);
 				
+				bool analytic = input->second >> 1;
+				bool depth = input->second & 1;
+
 				std::filesystem::path output;
-				if (input->second) {
-					output = conemap::discrete(output_path, input->first);
+				if (analytic) {
+					output = conemap::analytic(output_path, input->first, depth);
 				} else {
-					output = conemap::analytic(output_path, input->first);
+					output = conemap::discrete(output_path, input->first, depth);
 				}
 
 				// Push result
@@ -114,9 +118,15 @@ public:
 			output_path = directory_selector.GetSelected();
 			directory_selector.ClearSelected();
 		}
+		
+		ImGui::Text("Generation mode:");
+		ImGui::RadioButton("Discrete", &generation_mode, 0);
+		ImGui::RadioButton("Analytic", &generation_mode, 1);
 
-		ImGui::RadioButton("Analytic", &generation_mode, 0);
-		ImGui::RadioButton("Discrete", &generation_mode, 1);
+		ImGui::Text("Generation mode:");
+		ImGui::RadioButton("Heightmap", &height_mode, 0);
+		ImGui::RadioButton("Depth map", &height_mode, 1);
+
 		// TODO wrapping texture
 		if (ImGui::Button("Generate cone map from texture")) {
 			file_selector.Open();
@@ -130,7 +140,7 @@ public:
 			file_selector.ClearSelected();
 
 			for (std::filesystem::path input : input_files) {
-				input_queue.push({input, generation_mode});
+				input_queue.push({input, (generation_mode << 1) + height_mode});
 				// signal that an input can be processed
 				sem.release();
 			}
@@ -138,7 +148,8 @@ public:
 
 		std::optional<std::filesystem::path> output = output_queue.try_pop();
 
-		ImGui::TextWrapped("%s", processing.load() ? "Generating in progress" : "");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), // yellow
+				"%s", processing.load() ? "Generating in progress" : "");
 
 		if (output) {
 			return *output;
