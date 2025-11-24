@@ -123,8 +123,8 @@ public:
 		ImGui::RadioButton("Discrete", &generation_mode, 0);
 		ImGui::RadioButton("Analytic", &generation_mode, 1);
 
-		ImGui::Text("Generation mode:");
-		ImGui::RadioButton("Heightmap", &height_mode, 0);
+		ImGui::Text("Input mode:");
+		ImGui::RadioButton("Height map", &height_mode, 0);
 		ImGui::RadioButton("Depth map", &height_mode, 1);
 
 		// TODO wrapping texture

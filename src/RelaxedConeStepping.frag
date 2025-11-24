@@ -15,70 +15,62 @@ uniform sampler2D stepmap; // (height, cone half-angle tangent, df/dx, df/dy)
 uniform sampler2D texmap;
 
 void main(void) {
-	ivec2 texsize = textureSize(stepmap, 0);
-
 	// viewing ray direction in texture space
-	vec3 eyeSpaceDir = normalize(eyeSpaceVert);
-	vec3 dir = normalize(vec3(
-				dot(eyeSpaceDir, eyeSpaceTangent),
-				dot(eyeSpaceDir, eyeSpaceBitangent),
-				dot(eyeSpaceDir, -eyeSpaceNormal) / depth // larger depth <-> smaller steps downward
-				));
+	vec3 dir = normalize(eyeSpaceVert * // viewing ray
+			// greater depth <-> direction less downward
+			mat3(eyeSpaceTangent * depth,
+					 eyeSpaceBitangent * depth,
+					 -eyeSpaceNormal)); // dir.z inverted to be a positive length
 
 	// horizontal length of dir
-	float hl = sqrt(1.0f - dir.z * dir.z);
+	float l = sqrt(abs(1.0f - dir.z * dir.z));
+	// abs needed to avoid negatives from float inprecision
 
-	float ss; // step size
-
-	// minimum feature size parameter
+	// minimum feature size
+	ivec2 texsize = textureSize(stepmap, 0);
 	float mfs = 1.0f / max(texsize.x, texsize.y);
-
-	float dist = 0.0f;
 
 	// texture at starting coordinates
 	vec4 t = texture(stepmap, texCoord);
 
-
 // Cone stepping
+	float dist = 0.0f;
+	float s; // step length
 	while (1.0f - dir.z * dist > t.r) // while above the surface
 	{
 		// set step size (see documentation)
-		ss = (1.0f - dir.z * dist - t.r) / (dir.z + hl / (t.g * t.g))
-					+ mfs; // at least mfs
-
-		dist += ss; // increase distance
+		float tan = t.g * t.g;
+		s = (1.0f - dir.z * dist - t.r) * tan / (l + dir.z * tan)
+			+ mfs; // step over by mfs
+		dist += s; // increase distance
 
 		// find the new location and height
 		t = texture(stepmap, texCoord + dir.xy * dist);
 	}
 
-	bool converged = 1.0f - dir.z * (dist - mfs) > t.r; // for if steps == 0
-
 
 // Binary search (with mfs accuracy)
-	for (int i = steps; i > 0; --i) {
+	for (int i = 0; i < steps; ++i) {
 		// if not within mfs, take half the previous step size in the right direction
 		if (1.0f - dir.z * (dist - mfs) < t.r) {
-			ss *= 0.5f;
-			dist -= ss;
-			t = texture(stepmap, texCoord + dir.xy * dist);
+			s *= 0.5f;
+			dist -= s;
 		} else
 		if (1.0f - dir.z * (dist + mfs) > t.r) {
-			ss *= 0.5f;
-			dist += ss;
-			t = texture(stepmap, texCoord + dir.xy * dist);
+			s *= 0.5f;
+			dist += s;
 		} else {
-			// return the vector length needed to hit the height-map
-			converged = true;
+			// we are within mfs
 			break;
 		}
+		t = texture(stepmap, texCoord + dir.xy * dist);
 	}
 
+	// return the vector length needed to hit the height-map
 	vec2 uv = texCoord + dir.xy * dist;
 
-
 // Output color
-	if (show_convergence && !converged) {
+	if (show_convergence && !(1.0f - dir.z * (dist - mfs) > t.r && 1.0f - dir.z * (dist + mfs) < t.r)) {
 		gl_FragColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
 		return;
 	}
@@ -93,7 +85,7 @@ void main(void) {
 			break;
 		case 2: // Cones
 			t = texture(stepmap, uv);
-			gl_FragColor = vec4(vec3(t.g), 1.0f);
+			gl_FragColor = vec4(vec3(t.g * t.g), 1.0f);
 			break;
 		case 3: // Normals
 			// blue = df/dx
@@ -105,8 +97,10 @@ void main(void) {
 			t.x = -t.x * depth * texsize.x;
 			t.y = -t.y * depth * texsize.y;
 			t.z = 1.0f;
+			t.xyz = normalize(t.xyz);
+			t.xy / 2 + vec2(0.5f);
 
-			gl_FragColor = vec4(normalize(t.xyz), 1.0f);
+			gl_FragColor = vec4(t.xyz, 1.0f);
 			break;
 	}
 }

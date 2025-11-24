@@ -1,4 +1,4 @@
-project('Conemap renderer', 'cpp', default_options: ['cpp_std=c++20'])
+project('Conemap-renderer', 'cpp', default_options: ['cpp_std=c++20'])
 
 # deps
 gl_dep = dependency('GL')
@@ -12,10 +12,10 @@ conemap_dep = dependency('conemap', fallback: ['Conemap', 'conemap_dep'])
 fs = import('fs')
 
 # shaders
-fs.copyfile('src/ConeStepMapping.vert', install : true, install_dir : '.')
-fs.copyfile('src/RelaxedConeStepMapping.frag', install : true, install_dir : '.')
+fs.copyfile('src/ConeStepping.vert', install : true, install_dir : '.')
+fs.copyfile('src/RelaxedConeStepping.frag', install : true, install_dir : '.')
 
-executable('Conemap renderer',
+executable('Conemap-renderer',
            'src/main.cpp',
            'src/Scene.cpp',
            'src/ConeSteppingObject.cpp',

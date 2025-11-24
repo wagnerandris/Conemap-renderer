@@ -37,6 +37,7 @@ struct TextureResourceSelect {
 
 	TextureResourceSelect(const std::string &label_, GLuint &selected_id_)
 			: label(label_), selected_id(selected_id_) {
+				file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"}); // TODO check if jpeg can be 4 channels, check for 4 channel textures in file_utils, but color textures don't need to be 4 channel, so add parameter
 				file_selector.SetTitle(label + " selection");
 			}
 
@@ -192,7 +193,7 @@ public:
 		// Rendering
 		if (ImGui::Begin("Rendering")) {
 			cone_maps.file_combo();
-			ImGui::SliderFloat("Depth", &depth, 0.1f, 1.0f);
+			ImGui::SliderFloat("Depth", &depth, 0.0f, 1.0f);
 			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
 			ImGui::Checkbox("Show convergence", &show_convergence);
 

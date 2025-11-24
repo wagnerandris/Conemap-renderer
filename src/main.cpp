@@ -9,7 +9,6 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include <queue>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -22,6 +21,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <getopt.h>
+#include <queue>
 
 #include "Gui.hpp"
 #include "Scene.hpp"
@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
 	const struct option long_options[] = {
 		{"cone-maps", required_argument, nullptr, 'c'},
 		{"textures", required_argument, nullptr, 't'},
+		{"help", no_argument, nullptr, 'h'},
 		{nullptr, 0, nullptr, 0}
 	};
 
@@ -97,8 +98,16 @@ int main(int argc, char *argv[]) {
 	int option_index = 0;
 
 	// Parse arguments
-	while ((opt = getopt_long(argc, argv, "c:t:", long_options, &option_index)) != -1) {
+	while ((opt = getopt_long(argc, argv, "c:t:h", long_options, &option_index)) != -1) {
 		switch (opt) {
+		case 'h':
+			printf("Usage: %s [-c INPUT...] [-t INPUT...]\nOptions:\n", argv[0]);
+			printf("  -h [ --help ]         \tproduce help message\n");
+			printf("  -c [ --cone-maps ] arg\tinput cone maps\n");
+			printf("  -t [ --textures ] arg \tinput color textures\n");
+			exit(0);
+			break;
+
 		case 'c':
 			cone_maps.emplace_back(optarg);
 			// Collect all non-option arguments after -c or --cone-maps
@@ -127,7 +136,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Conemap renderer", NULL, NULL);
+	window = glfwCreateWindow(640, 480, "Conemap-renderer", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
 		return -1;
