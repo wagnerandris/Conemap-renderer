@@ -1,7 +1,8 @@
-#include "Controls.hpp"
-#include "src/Camera.hpp"
 #include <GLFW/glfw3.h>
 #include <glm/geometric.hpp>
+
+#include "Controls.hpp"
+#include "src/Camera.hpp"
 
 void Controls::move(double delta_time) {
 	glm::vec3 dirs = glm::vec3(d_down - a_down, e_down - q_down, w_down - s_down);

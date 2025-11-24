@@ -10,6 +10,6 @@
 
 std::string read_text_file(const std::filesystem::path &path);
 void load_shader_from_file(const std::filesystem::path &path, const GLuint shader);
-GLuint load_texture_from_file(const std::filesystem::path &path);
+GLuint load_texture_from_file(const std::filesystem::path &path, bool conemap = false);
 
 #endif

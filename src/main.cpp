@@ -9,6 +9,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <ostream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -18,8 +19,7 @@
 #include <imgui.h>
 
 // STD
-#include <cstddef>
-#include <cstdio>
+#include <iostream>
 #include <getopt.h>
 #include <queue>
 
@@ -32,7 +32,7 @@ static bool keyboard_to_imgui;
 static bool mouse_to_imgui;
 
 static void error_callback(int error, const char *description) {
-	fprintf(stderr, "Error: %s\n", description);
+	std::cerr << "Error: " << description << std::endl;
 }
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action,
@@ -101,10 +101,11 @@ int main(int argc, char *argv[]) {
 	while ((opt = getopt_long(argc, argv, "c:t:h", long_options, &option_index)) != -1) {
 		switch (opt) {
 		case 'h':
-			printf("Usage: %s [-c INPUT...] [-t INPUT...]\nOptions:\n", argv[0]);
-			printf("  -h [ --help ]         \tproduce help message\n");
-			printf("  -c [ --cone-maps ] arg\tinput cone maps\n");
-			printf("  -t [ --textures ] arg \tinput color textures\n");
+			std::cout << "Usage: " << argv[0] << " [-c CONE MAP...] [-t TEXTURE...]\n"
+				"Options:\n"
+				"  -h, --help             \tproduce help message\n"
+				"  -c, --cone-maps FILE...\tinput cone maps\n"
+				"  -t, --textures FILE... \tinput color textures\n";
 			exit(0);
 			break;
 
@@ -148,7 +149,7 @@ int main(int argc, char *argv[]) {
 	/* Start GLEW */
 	GLenum error = glewInit();
 	if (error != GLEW_OK) {
-		fprintf(stderr, "Error: Failure during GLEW initialization.");
+		std::cerr << "Error: Failure during GLEW initialization.\n";
 		return -1;
 	}
 

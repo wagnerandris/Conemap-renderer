@@ -50,7 +50,7 @@ void load_shader_from_file(const std::filesystem::path &path, const GLuint shade
 	glCompileShader(shader);
 }
 
-GLuint load_texture_from_file(const std::filesystem::path &path) {
+GLuint load_texture_from_file(const std::filesystem::path &path, bool conemap) {
 	if(!std::filesystem::is_regular_file(path)) {
 		std::fprintf(stderr, "Error: %s is not a file.\n", path.c_str());
 		return 0;
@@ -62,6 +62,10 @@ GLuint load_texture_from_file(const std::filesystem::path &path) {
 	unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 	if (!data) {
 		std::fprintf(stderr, "Error: Could not load texture from %s.\n", path.c_str());
+		return 0;
+	}
+	if (conemap && channels != 4) {
+		std::fprintf(stderr, "Error: Cone maps require 4 channels but %s only has %d.\n", path.c_str(), channels);
 		return 0;
 	}
 	

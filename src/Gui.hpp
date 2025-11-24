@@ -35,14 +35,16 @@ struct TextureResourceSelect {
 			ImGuiFileBrowserFlags_EditPathString
 			);
 
-	TextureResourceSelect(const std::string &label_, GLuint &selected_id_)
-			: label(label_), selected_id(selected_id_) {
-				file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"}); // TODO check if jpeg can be 4 channels, check for 4 channel textures in file_utils, but color textures don't need to be 4 channel, so add parameter
+	bool require_conemap;
+
+	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, bool require_conemap_ = false)
+			: label(label_), selected_id(selected_id_), require_conemap(require_conemap_) {
+				file_selector.SetTypeFilters({".png", ".jpg", ".jpeg"});
 				file_selector.SetTitle(label + " selection");
 			}
 
-	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, const std::vector<std::filesystem::path> &paths)
-			: TextureResourceSelect(label_, selected_id_) {
+	TextureResourceSelect(const std::string &label_, GLuint &selected_id_, const std::vector<std::filesystem::path> &paths, bool require_conemap_ = false)
+			: TextureResourceSelect(label_, selected_id_, require_conemap_) {
 				load_files(paths);
 				
 				// select the last file loaded
@@ -73,7 +75,7 @@ struct TextureResourceSelect {
 				continue;
 			}
 
-			GLuint id = load_texture_from_file(path);
+			GLuint id = load_texture_from_file(path, require_conemap);
 			
 			if(!id) {
 				error += path.string() + " could not be loaded.\n";
@@ -175,7 +177,7 @@ public:
 				display_mode(display_mode_),
 				show_convergence(show_convergence_),
 				object(object_),
-				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex, input_cone_maps)),
+				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex, input_cone_maps, true)),
 				textures(TextureResourceSelect("Texture", object.texmapTex, input_textures)),
 				depth(object.depth),
 				cone_map_generator(ConeMapGenerator()) {}
