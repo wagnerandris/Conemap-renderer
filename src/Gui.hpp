@@ -26,7 +26,7 @@ struct TextureResourceSelect {
 	std::string error = "";
 
 	std::vector<TextureResource> resources;
-	unsigned int selected_index = 0;
+	int selected_index = -1;
 	GLuint &selected_id;
 
 	ImGui::FileBrowser file_selector = ImGui::FileBrowser(
@@ -92,7 +92,7 @@ struct TextureResourceSelect {
 
 	void file_combo() {
 		const char *combo_preview_value =
-				selected_index < resources.size() // if there is a selected resource
+				selected_index >= 0 // selected_index < resources.size() // if there is a selected resource
 						? resources[selected_index].name.c_str() // display its name
 						: "";
 
@@ -106,7 +106,7 @@ struct TextureResourceSelect {
 			filter.Draw("##Filter", -FLT_MIN);
 
 			for (size_t i = 0; i < resources.size(); i++) {
-				const bool is_selected = (selected_index == i);
+				const bool is_selected = (static_cast<size_t>(selected_index) == i);
 
 				if (filter.PassFilter(resources[i].name.c_str())) { // only display names that match the filer string
 					ImGui::PushID(resources[i].id); // needed for resources with the same name
@@ -125,7 +125,7 @@ struct TextureResourceSelect {
 			ImGui::EndCombo();
 		}
 		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("%s", selected_index < resources.size()
+			ImGui::SetTooltip("%s", selected_index >= 0 // selected_index < resources.size()
 																	? resources[selected_index].path.c_str()
 																	: "");
 

@@ -93,12 +93,12 @@ void main(void) {
 			t = texture(stepmap, uv);
 
 			// scale normals to reflect displayed geometry
-			t.xy = t.ba - 0.5f;
+			t.xy = t.ba * 2.0f - vec2(1.0f);
 			t.x = -t.x * depth * texsize.x;
 			t.y = -t.y * depth * texsize.y;
 			t.z = 1.0f;
 			t.xyz = normalize(t.xyz);
-			t.xy / 2 + vec2(0.5f);
+			t.xy = t.xy / 2.0f + vec2(0.5f);
 
 			gl_FragColor = vec4(t.xyz, 1.0f);
 			break;
