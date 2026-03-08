@@ -1,5 +1,5 @@
-// GLEW
-#include <GL/glew.h>
+// GLAD
+#include <glad/gl.h>
 
 // GLFW
 #include <GLFW/glfw3.h>
@@ -21,7 +21,6 @@
 // STD
 #include <iostream>
 #include <getopt.h>
-#include <queue>
 
 #include "Gui.hpp"
 #include "Scene.hpp"
@@ -146,15 +145,12 @@ int main(int argc, char *argv[]) {
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 
-	/* Start GLEW */
-	GLenum error = glewInit();
-	if (error != GLEW_OK) {
-		std::cerr << "Error: Failure during GLEW initialization.\n";
-		return -1;
-	}
-
 	/* Turn off vsync to see true FPS */
 	glfwSwapInterval(0);
+	
+	/* Initialize glad */
+	int version = gladLoadGL(glfwGetProcAddress);
+	printf("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
 	/* Create scene */
 	scene = new Scene();

@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-// GLEW
-#include <GL/glew.h>
+// GLAD
+#include <glad/gl.h>
 
 // stb
 #ifndef STB_IMAGE_IMPLEMENTATION

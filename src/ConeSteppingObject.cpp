@@ -1,5 +1,7 @@
-// GLEW
-#include <GL/glew.h>
+// GLAD
+#include <glad/gl.h>
+
+// GLM
 #include <glm/geometric.hpp>
 
 #include "ConeSteppingObject.hpp"
@@ -33,7 +35,7 @@ ConeSteppingObject::ConeSteppingObject(const std::vector<PosUVVertex> vertices) 
 		float det = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
 
 		glm::vec3 tangent = det * (dp1 * duv2.y - dp2 * duv1.y);
-		glm::vec3 bitangent = - det * (dp1 * duv1.x - dp2 * duv2.x); // z faces the other way
+		glm::vec3 bitangent = det * (dp2 * duv1.x - dp1 * duv2.x); // z faces the other way
 		
 		// the normal is ortogonal to both tangent and bitangent
 		glm::vec3 normal = glm::cross(tangent, bitangent);

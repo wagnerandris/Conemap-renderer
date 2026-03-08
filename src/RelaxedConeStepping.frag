@@ -80,17 +80,14 @@ void main(void) {
 			gl_FragColor = texture(texmap, uv);
 			break;
 		case 1: // Heights
-			t = texture(stepmap, uv);
 			gl_FragColor = vec4(vec3(t.r), 1.0f);
 			break;
 		case 2: // Cones
-			t = texture(stepmap, uv);
 			gl_FragColor = vec4(vec3(t.g * t.g), 1.0f);
 			break;
 		case 3: // Normals
 			// blue = df/dx
 			// alpha = df/dy
-			t = texture(stepmap, uv);
 
 			// scale normals to reflect displayed geometry
 			t.xy = t.ba * 2.0f - vec2(1.0f);

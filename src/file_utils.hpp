@@ -5,8 +5,8 @@
 #include <filesystem>
 #include <string>
 
-// GLEW
-#include <GL/glew.h>
+// GLAD
+#include <glad/gl.h>
 
 std::string read_text_file(const std::filesystem::path &path);
 void load_shader_from_file(const std::filesystem::path &path, const GLuint shader);

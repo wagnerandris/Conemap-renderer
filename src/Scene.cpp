@@ -1,6 +1,5 @@
-// GLEW
-#include <GL/glew.h>
-#include <GL/gl.h>
+// GLAD
+#include <glad/gl.h>
 
 // GLM
 #include <glm/ext/matrix_transform.hpp>
