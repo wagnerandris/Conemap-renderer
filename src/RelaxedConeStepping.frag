@@ -21,19 +21,16 @@ void main(void) {
 		normalize(eyeSpaceVert * // viewing ray
 							mat3(eyeSpaceTangent * depth,
 					 	 	 	 	 eyeSpaceBitangent * depth,
-					 	 	 	 	-eyeSpaceNormal)); // dir.z inverted to be a positive length
+					 	 	 	 	-eyeSpaceNormal)); // dir.z inverted to be positive
 	// greater depth <-> direction less downward
 
-	// horizontal length of dir
-	float l = sqrt(abs(1.0f - dir.z * dir.z));
+	float l = sqrt(abs(1.0f - dir.z * dir.z)); // horizontal length of dir
 	// abs needed to avoid negatives from float inprecision
 
-	// minimum feature size
 	ivec2 texsize = textureSize(stepmap, 0);
-	float mfs = 1.0f / max(texsize.x, texsize.y);
+	float mfs = 1.0f / max(texsize.x, texsize.y); // min feature size
 	
-	// texture at starting coordinates
-	vec4 t = texture(stepmap, texCoord);
+	vec4 t = texture(stepmap, texCoord); // texture at starting coordinates
 
 // Cone stepping
 	float dist = 0.0f;
@@ -58,8 +55,7 @@ void main(void) {
       s += w;
 			dist += s; // increase distance
 
-			// find the new location and height
-			t = texture(stepmap, texCoord + dir.xy * dist);
+			t = texture(stepmap, texCoord + dir.xy * dist); // new location and height
 			step_count++;
 		}
 	} else {
@@ -71,11 +67,13 @@ void main(void) {
 				+ mfs; // correct by minimum feature size
 			dist += s; // increase distance
 
-			// find the new location and height
-			t = texture(stepmap, texCoord + dir.xy * dist);
+			t = texture(stepmap, texCoord + dir.xy * dist); // new location and height
 			step_count++;
 		}
 	}
+
+	if (1.0f - dir.z * dist > t.r) // if we are still above the surface
+		s = 1.0f / dir.z - dist; // search on the rest of the distance to the bottom
 
 // Binary search (with mfs accuracy)
 	for (int i = 0; i < binary_steps; ++i) {
