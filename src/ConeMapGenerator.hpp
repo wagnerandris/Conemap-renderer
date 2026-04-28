@@ -85,13 +85,13 @@ public:
 				processing.store(true);
 				
 				bool analytic = input->second >> 1;
-				bool depth = input->second & 1;
+				bool depthmap = input->second & 1;
 
 				std::filesystem::path output;
 				if (analytic) {
-					output = conemap::analytic(output_path, input->first, depth);
+					output = conemap::analytic(output_path, input->first, depthmap);
 				} else {
-					output = conemap::discrete(output_path, input->first, depth);
+					output = conemap::discrete(output_path, input->first, depthmap);
 				}
 
 				// Push result

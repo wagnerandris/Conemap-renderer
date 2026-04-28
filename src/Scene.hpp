@@ -24,8 +24,10 @@ public:
 	ConeSteppingObject quad;
 
 	// rendering settings
-	int steps = 8;
+	int cone_steps = 128;
+	int binary_steps = 8;
 	int display_mode = 1;
+	bool cell_max_trace = false;
 	bool show_convergence = true;
 
 	// rendering

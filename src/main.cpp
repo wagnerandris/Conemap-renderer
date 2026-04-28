@@ -149,8 +149,7 @@ int main(int argc, char *argv[]) {
 	glfwSwapInterval(0);
 	
 	/* Initialize glad */
-	int version = gladLoadGL(glfwGetProcAddress);
-	printf("GL %d.%d\n", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+	gladLoadGL(glfwGetProcAddress);
 
 	/* Create scene */
 	scene = new Scene();
@@ -174,7 +173,7 @@ int main(int argc, char *argv[]) {
 	ImGui_ImplOpenGL3_Init();
 
 	/* Create gui */
-	gui = new Gui(scene->steps, scene->display_mode, scene->show_convergence, scene->quad, cone_maps, textures);
+	gui = new Gui(scene->cone_steps, scene->binary_steps, scene->display_mode, scene->cell_max_trace, scene->show_convergence, scene->quad, cone_maps, textures);
 
 	static std::queue<double> frame_times;
 	frame_times.push(glfwGetTime());

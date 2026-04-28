@@ -155,8 +155,10 @@ struct TextureResourceSelect {
 
 class Gui {
 	// rendering settings
-	int &steps;
+	int &cone_steps;
+	int &binary_steps;
 	int &display_mode;
+	bool &cell_max_trace;
 	bool &show_convergence;
 
 	// object settings
@@ -169,12 +171,14 @@ class Gui {
 	ConeMapGenerator cone_map_generator;
 
 public:
-	Gui(int &steps_, int &display_mode_, bool &show_convergence_,
+	Gui(int &cone_steps_, int &binary_steps_, int &display_mode_, bool &cell_max_trace_, bool &show_convergence_,
 			ConeSteppingObject &object_, 
 			std::vector<std::filesystem::path> &input_cone_maps,
 			std::vector<std::filesystem::path> &input_textures) :
-				steps(steps_),
+				cone_steps(cone_steps_),
+				binary_steps(binary_steps_),
 				display_mode(display_mode_),
+				cell_max_trace(cell_max_trace_),
 				show_convergence(show_convergence_),
 				object(object_),
 				cone_maps(TextureResourceSelect("Cone map", object.stepmapTex, input_cone_maps, true)),
@@ -196,7 +200,9 @@ public:
 		if (ImGui::Begin("Rendering")) {
 			cone_maps.file_combo();
 			ImGui::SliderFloat("Depth", &depth, 0.0f, 1.0f);
-			ImGui::SliderInt("Binary search steps", &steps, 0, 16);
+			ImGui::SliderInt("Cone steps", &cone_steps, 0, 256);
+			ImGui::SliderInt("Binary search steps", &binary_steps, 0, 16);
+			ImGui::Checkbox("Cell-max tracing", &cell_max_trace);
 			ImGui::Checkbox("Show convergence", &show_convergence);
 
 			ImGui::RadioButton("Heights", &display_mode, 1);

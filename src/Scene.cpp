@@ -97,15 +97,19 @@ void Scene::render() {
 										 glm::value_ptr(camera.get_projection_matrix()));
 
 	// fragment shader
-	GLuint stepsLoc = glGetUniformLocation(program, "steps");
+	GLuint coneStepsLoc = glGetUniformLocation(program, "cone_steps");
+	GLuint binaryStepsLoc = glGetUniformLocation(program, "binary_steps");
 	GLuint display_modeLoc = glGetUniformLocation(program, "display_mode");
+	GLboolean cell_max_traceLoc = glGetUniformLocation(program, "cell_max_trace");
 	GLboolean show_convergenceLoc = glGetUniformLocation(program, "show_convergence");
 	GLuint stepmapLoc = glGetUniformLocation(program, "stepmap");
 	GLuint texmapLoc = glGetUniformLocation(program, "texmap");
 	GLuint depthLoc = glGetUniformLocation(program, "depth");
 
-	glUniform1i(stepsLoc, steps);
+	glUniform1i(coneStepsLoc, cone_steps);
+	glUniform1i(binaryStepsLoc, binary_steps);
 	glUniform1i(display_modeLoc, display_mode);
+	glUniform1i(cell_max_traceLoc, cell_max_trace);
 	glUniform1i(show_convergenceLoc, show_convergence);
 	glUniform1f(depthLoc, quad.depth);
 
