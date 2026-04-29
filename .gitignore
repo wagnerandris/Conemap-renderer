@@ -1,1 +1,6 @@
 .cache
+subprojects/glfw-*
+subprojects/glm-*
+subprojects/imgui-[0-9]*
+subprojects/packagecache/
+subprojects/wrapdb.json

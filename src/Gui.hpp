@@ -7,8 +7,8 @@
 #include <string>
 
 // ImGui
-#include "external/imgui/src/imgui.h"
-#include "external/imgui-filebrowser/imfilebrowser.h"
+#include "imgui.h"
+#include "subprojects/imgui-filebrowser/imfilebrowser.h"
 
 
 #include "file_utils.hpp"

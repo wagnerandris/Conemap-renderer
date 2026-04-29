@@ -2,12 +2,11 @@ project('Conemap-renderer', ['cpp', 'c'], default_options: ['cpp_std=c++20'])
 
 # deps
 gl_dep = dependency('GL')
+glad_dep = subproject('glad').get_variable('glad_dep')
 glfw_dep = dependency('glfw3', fallback: ['glfw', 'glfw_dep'])
 glm_dep = dependency('glm', fallback: ['glm', 'glm_dep'])
 imgui_dep = dependency('imgui', fallback: ['imgui', 'imgui_dep'])
 conemap_dep = dependency('conemap', fallback: ['Conemap', 'conemap_dep'])
-
-subdir('subprojects/glad')
 
 fs = import('fs')
 

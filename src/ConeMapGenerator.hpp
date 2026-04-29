@@ -7,11 +7,11 @@
 #include <thread>
 
 // ImGui
-#include "external/imgui/src/imgui.h"
-#include "external/imgui-filebrowser/imfilebrowser.h"
+#include "imgui.h"
+#include "subprojects/imgui-filebrowser/imfilebrowser.h"
 
 // Cone map generation
-#include "subprojects/Conemap/src/conemap.hpp"
+#include "conemap.hpp"
 
 template <typename T>
 class ThreadSafeQueue {
