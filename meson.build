@@ -2,12 +2,12 @@ project('Conemap-renderer', ['cpp', 'c'], default_options: ['cpp_std=c++20'])
 
 # deps
 gl_dep = dependency('GL')
-glfw_dep = dependency('glfw3')
-
-glm_inc = include_directories('external/glm')
-subdir('external/imgui')
-subdir('external/glad')
+glfw_dep = dependency('glfw3', fallback: ['glfw', 'glfw_dep'])
+glm_dep = dependency('glm', fallback: ['glm', 'glm_dep'])
+imgui_dep = dependency('imgui', fallback: ['imgui', 'imgui_dep'])
 conemap_dep = dependency('conemap', fallback: ['Conemap', 'conemap_dep'])
+
+subdir('subprojects/glad')
 
 fs = import('fs')
 
@@ -22,6 +22,5 @@ executable('Conemap-renderer',
            'src/Camera.cpp',
            'src/Controls.cpp',
            'src/file_utils.cpp',
-           dependencies : [gl_dep, glad_dep, glfw_dep, imgui_dep, conemap_dep],
-           include_directories: glm_inc,
+           dependencies : [gl_dep, glm_dep, glad_dep, glfw_dep, imgui_dep, conemap_dep],
            install : true)
