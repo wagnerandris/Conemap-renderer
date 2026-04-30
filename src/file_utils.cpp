@@ -56,7 +56,7 @@ GLuint load_texture_from_file(const std::filesystem::path &path, bool conemap) {
 		return 0;
 	}
 
-	stbi_set_flip_vertically_on_load(true); // OpenGL expects 0.0 at bottom
+	//stbi_set_flip_vertically_on_load(true); // OpenGL expects 0.0 at bottom
 
 	int width, height, channels;
 	unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
