@@ -20,7 +20,7 @@ struct PosUVVertex {
 struct ConeSteppingObject {
 	GLuint vao;
 	GLuint vbo;
-	GLuint stepmapTex;
+	GLuint conemapTex;
 	GLuint texmapTex;
 	float depth = 0.25f;
 

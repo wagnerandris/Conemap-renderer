@@ -9,7 +9,6 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-#include <ostream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -25,6 +24,8 @@
 #include "Gui.hpp"
 #include "Scene.hpp"
 
+static std::vector<TextureResource> conemap_resources;
+static std::vector<TextureResource> texmap_resources;
 static Scene *scene;
 static Gui *gui;
 static bool keyboard_to_imgui;
@@ -152,7 +153,7 @@ int main(int argc, char *argv[]) {
 	gladLoadGL(glfwGetProcAddress);
 
 	/* Create scene */
-	scene = new Scene();
+	scene = new Scene(conemap_resources);
 
 	/* Setup input callbacks */
 	// only after scene creation as these relay input to scene
@@ -173,7 +174,7 @@ int main(int argc, char *argv[]) {
 	ImGui_ImplOpenGL3_Init();
 
 	/* Create gui */
-	gui = new Gui(scene->cone_steps, scene->binary_steps, scene->display_mode, scene->cell_max_trace, scene->show_convergence, scene->quad, cone_maps, textures);
+	gui = new Gui(scene->cone_steps, scene->binary_steps, scene->display_mode, scene->cell_max_trace, scene->show_convergence, scene->quad, conemap_resources, texmap_resources, cone_maps, textures);
 
 	static std::queue<double> frame_times;
 	frame_times.push(glfwGetTime());
@@ -187,7 +188,7 @@ int main(int argc, char *argv[]) {
 		// calculate FPS
 		while (frame_times.size() > 1 && frame_times.front() < now - 1) frame_times.pop(); // remove frame times outsied 1 sec window
 		frame_times.push(now); // add new time
-		double fps = frame_times.size() / (frame_times.back() - frame_times.front());
+		double fps = (frame_times.size() - 1) / (frame_times.back() - frame_times.front());
 
 		/* Poll for and process events */
 
@@ -212,6 +213,7 @@ int main(int argc, char *argv[]) {
 		/* Render frame */
 		// move camera if key is being pressed
 		scene->controls.move(delta_time);
+		scene->controls.measure(now);
 
 		// render
 		scene->render();

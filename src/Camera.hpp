@@ -11,7 +11,9 @@ public:
 
 	// matrices
 	inline glm::mat4 get_view_matrix() const { return view_matrix; }
+	void set_view_matrix(glm::mat4 const& _view_matrix) { view_matrix = _view_matrix; }
 	inline glm::mat4 get_projection_matrix() const { return projection_matrix; }
+	void set_projection_matrix(glm::mat4 const& _projection_matrix) { projection_matrix = _projection_matrix; }
 	inline glm::mat4 get_view_projection_matrix() const { return projection_matrix * view_matrix; }
 
 	// view

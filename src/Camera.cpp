@@ -30,6 +30,12 @@ void Camera::set_up(glm::vec3 const& _up) {
 	view_matrix = glm::lookAt(eye, center, up);
 }
 
+void Camera::move(glm::vec3 const& diff) {
+	eye += diff;
+	center += diff;
+	view_matrix = glm::lookAt(eye, center, up);
+}
+
 void Camera::set_fovy(float _fovy) {
 	fovy = _fovy;
 	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
@@ -48,12 +54,6 @@ void Camera::set_zNear(float _zNear) {
 void Camera::set_zFar(float _zFar) {
 	zFar = _zFar;
 	projection_matrix = glm::perspective(fovy, aspect, zNear, zFar);
-}
-
-void Camera::move(glm::vec3 const& diff) {
-	eye += diff;
-	center += diff;
-	view_matrix = glm::lookAt(eye, center, up);
 }
 
 void Camera::rotate_eye(float phi, float theta) {

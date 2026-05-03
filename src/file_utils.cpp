@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 // GLAD
 #include <glad/gl.h>
@@ -83,3 +84,33 @@ GLuint load_texture_from_file(const std::filesystem::path &path, bool conemap) {
 	stbi_image_free(data);
 	return textureID;
 }
+
+
+std::string load_textures(const std::vector<std::filesystem::path> &paths, std::vector<TextureResource> &resources, bool conemap)
+{
+	std::string error = ""; // remove error messages before attempting to load new textures
+
+	for (std::filesystem::path path : paths) {
+		auto it = std::find_if(resources.begin(), resources.end(),
+													 [&path](const TextureResource &res) {
+														 return std::filesystem::equivalent(res.path, path);
+													 });
+
+		if (it != resources.end()) {
+			error += path.string() + " is already loaded.\n";
+			continue;
+		}
+
+		GLuint id = load_texture_from_file(path, conemap);
+		
+		if(!id) {
+			error += path.string() + " could not be loaded.\n";
+			continue;
+		}
+
+		resources.push_back(TextureResource{path, path.filename(), id});
+	}
+
+	return error;
+}
+

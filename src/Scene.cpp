@@ -28,10 +28,10 @@ static const std::vector<PosUVVertex> quad_vertices = {
 		{{-1.0f, 0.0f, 1.0f},  {0.0f, 0.0f}},
 };
 
-Scene::Scene() :
+Scene::Scene(std::vector<TextureResource> &conemap_resources) :
 	camera(Camera(glm::vec3(0.0f, 1.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 16.0f/9.0f)),
-	controls(Controls(camera)),
-	quad(ConeSteppingObject(quad_vertices))
+	quad(ConeSteppingObject(quad_vertices)),
+	controls(Controls(camera, conemap_resources, quad.conemapTex))
 {
 // create shaders
 	GLint success;
@@ -115,7 +115,7 @@ void Scene::render() {
 
 	// bind textures
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, quad.stepmapTex);
+	glBindTexture(GL_TEXTURE_2D, quad.conemapTex);
 	glUniform1i(stepmapLoc, 0);
 
 	glActiveTexture(GL_TEXTURE1);

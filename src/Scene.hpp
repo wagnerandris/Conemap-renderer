@@ -14,14 +14,14 @@ class Scene {
 	Camera camera;
 
 public:
-	Scene();
+	Scene(std::vector<TextureResource> &conemap_resources);
 	~Scene();
-	
-	// camera controls
-	Controls controls;
 	
 	// objects
 	ConeSteppingObject quad;
+	
+	// camera controls
+	Controls controls;
 
 	// rendering settings
 	int cone_steps = 128;
