@@ -5,6 +5,7 @@
 #include <optional>
 #include <queue>
 #include <thread>
+#include <mutex>
 
 // ImGui
 #include "imgui.h"

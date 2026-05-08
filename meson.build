@@ -7,6 +7,7 @@ glfw_dep = dependency('glfw3', fallback: ['glfw', 'glfw_dep'])
 glm_dep = dependency('glm', fallback: ['glm', 'glm_dep'])
 imgui_dep = dependency('imgui', fallback: ['imgui', 'imgui_dep'])
 conemap_dep = dependency('conemap', fallback: ['Conemap', 'conemap_dep'])
+stb_inc = include_directories('subprojects')
 
 fs = import('fs')
 
@@ -22,4 +23,5 @@ executable('Conemap-renderer',
            'src/Controls.cpp',
            'src/file_utils.cpp',
            dependencies : [gl_dep, glm_dep, glad_dep, glfw_dep, imgui_dep, conemap_dep],
+           include_directories : stb_inc,
            install : true)
